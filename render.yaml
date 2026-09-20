@@ -1,0 +1,17 @@
+# Blueprint для Render: подключите репозиторий — сервис поднимется сам.
+# Бесплатного плана хватает: игра держит состояние в памяти и не требует БД.
+services:
+  - type: web
+    name: bunker-live
+    runtime: node
+    plan: free
+    region: frankfurt
+    buildCommand: npm ci --omit=dev
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      # HOST=0.0.0.0 обязателен: Render проксирует трафик внутрь контейнера.
+      - key: HOST
+        value: "0.0.0.0"
