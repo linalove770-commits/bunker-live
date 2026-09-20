@@ -94,8 +94,12 @@
 
       <div class="lobby__players">
         <h2 class="section-title">Выжившие <span class="muted" id="lobby-count">0/16</span></h2>
+        <div class="lobby__bots">
+          <button class="btn btn--sm btn--ghost" id="btn-add-bot">+ Добавить бота</button>
+          <span class="hint">Проверить партию в одиночку: боты раскрывают карты и голосуют сами.</span>
+        </div>
         <div class="players-grid" id="lobby-players"></div>
-        <div class="empty-state" id="lobby-empty">Пока никого. Отправьте друзьям код — партия начнётся, когда вас будет хотя бы двое.</div>
+        <div class="empty-state" id="lobby-empty">Пока никого. Отправьте друзьям код или добавьте ботов, чтобы попробовать одному.</div>
       </div>
 
       <div class="settings" id="settings-panel">

@@ -1033,7 +1033,10 @@
   box-shadow: var(--shadow-2);
   overflow-y: auto;
   overscroll-behavior: contain;
-  animation: sheet-in var(--dur-med) var(--ease) both;
+  /* Без fill-mode: с `both` анимация продолжает удерживать transform и
+     перебивает состояние .sheet--collapsed (анимации в каскаде выше
+     обычных объявлений). */
+  animation: sheet-in var(--dur-med) var(--ease);
 }
 
 .sheet__head {
@@ -1589,8 +1592,15 @@
   gap: 8px;
 }
 
+/* Свёрнутая шторка: остаётся только заголовок с кнопкой. Скрываем тело
+   вместо сдвига на вычисленную высоту — так не остаётся щели и не нужны
+   магические пиксели. */
+.sheet--collapsed .sheet__body {
+  display: none;
+}
+
 .sheet--collapsed {
-  transform: translateY(calc(100% - 58px));
+  max-height: none;
 }
 
 /* Контент экрана не должен навсегда прятаться под шторкой: резервируем место
@@ -1630,4 +1640,56 @@
   overflow-wrap: normal;
   hyphens: none;
   line-height: 1.3;
+}
+
+/* ==========================================================================
+   БОТЫ: соло-проверка партии
+   ========================================================================== */
+
+.lobby__bots {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.lobby__bots .hint { margin: 0; }
+
+/* Бот отличается пунктирной рамкой и циановым именем — не путается с людьми. */
+.player-chip--bot {
+  border-style: dashed;
+}
+
+.player-chip--bot .player-chip__name {
+  color: var(--accent-2);
+}
+
+.player-chip {
+  align-items: center;
+  gap: 6px;
+}
+
+.player-chip__remove {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  margin-left: auto;
+  border: 1px solid var(--border-strong);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-mute);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease);
+}
+
+.player-chip__remove:hover,
+.player-chip__remove:focus-visible {
+  border-color: var(--danger-line);
+  color: var(--danger);
 }

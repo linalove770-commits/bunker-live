@@ -129,6 +129,46 @@ class RoomManager {
     return { room, player, reconnected: false };
   }
 
+  /**
+   * Добавляет бота. Нужен, чтобы один человек мог прогнать партию целиком
+   * и проверить функционал, не собирая компанию.
+   */
+  addBot(room, actorId) {
+    const actor = room.members.find((m) => m.id === actorId);
+    if (!actor || !actor.isHost) throw new RoomError('Ботов добавляет только ведущий');
+    if (room.game && room.game.phase !== 'lobby') throw new RoomError('Партия уже началась');
+    if (room.members.length >= MAX_PLAYERS) {
+      throw new RoomError(`В комнате уже максимум игроков (${MAX_PLAYERS})`);
+    }
+    const used = new Set(room.members.map((m) => m.nickname.toLowerCase()));
+    let n = 1;
+    while (used.has(`бот-${n}`)) n += 1;
+
+    const bot = {
+      id: randomId(6),
+      token: null,
+      nickname: `Бот-${n}`,
+      isHost: false,
+      connected: true,
+      socketId: null,
+      isBot: true,
+    };
+    room.members.push(bot);
+    room.lastActivity = Date.now();
+    return bot;
+  }
+
+  removeBot(room, actorId, botId) {
+    const actor = room.members.find((m) => m.id === actorId);
+    if (!actor || !actor.isHost) throw new RoomError('Ботов убирает только ведущий');
+    if (room.game && room.game.phase !== 'lobby') throw new RoomError('Партия уже началась');
+    const idx = room.members.findIndex((m) => m.id === botId && m.isBot);
+    if (idx === -1) throw new RoomError('Такого бота нет в комнате');
+    const [removed] = room.members.splice(idx, 1);
+    room.lastActivity = Date.now();
+    return removed;
+  }
+
   setSocket(room, playerId, socketId) {
     const member = room.members.find((m) => m.id === playerId);
     if (member) member.socketId = socketId;
@@ -146,11 +186,11 @@ class RoomManager {
     }
   }
 
-  /** Передаёт роль ведущего первому подключённому игроку. */
+  /** Передаёт роль ведущего первому подключённому игроку (боты не в счёт). */
   reassignHost(room) {
     if (room.game && room.game.phase !== 'lobby') return null;
-    const alive = room.members.filter((m) => m.connected);
-    const pool = alive.length ? alive : room.members;
+    const alive = room.members.filter((m) => m.connected && !m.isBot);
+    const pool = alive.length ? alive : room.members.filter((m) => !m.isBot);
     if (!pool.length) return null;
     room.members.forEach((m) => { m.isHost = false; });
     pool[0].isHost = true;
@@ -190,6 +230,7 @@ class RoomManager {
         id: m.id,
         nickname: m.nickname,
         isHost: m.isHost,
+        isBot: !!m.isBot,
         connected: m.connected,
         joinedAt: room.createdAt,
       })),

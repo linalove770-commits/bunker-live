@@ -8,10 +8,10 @@
   "scripts": {
     "start": "node server/server.js",
     "dev": "node server/server.js",
-    "test": "node --test tests/rules.test.js tests/game.test.js tests/decks.test.js tests/invariants.test.js",
+    "test": "node --test tests/rules.test.js tests/game.test.js tests/decks.test.js tests/invariants.test.js tests/bots.test.js",
     "test:ui:static": "node tests/e2e/check-ui-integration.js",
     "test:e2e": "node tests/e2e/play-full-game.js 6 && node tests/e2e/check-privacy.js 6",
-    "test:ui": "node tests/e2e/check-ui-browser.js",
+    "test:ui": "node tests/e2e/check-ui-browser.js && node tests/e2e/check-solo.js",
     "verify": "npm test && npm run test:ui:static && npm run test:e2e && npm run test:ui"
   },
   "engines": {

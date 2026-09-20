@@ -87,6 +87,7 @@ class GameState {
       id: p.id,
       nickname: p.nickname,
       isHost: !!p.isHost,
+      isBot: !!p.isBot,
       connected: p.connected !== false,
       exiled: false,
       cards: null, // { category: cardId }
@@ -777,36 +778,127 @@ class GameState {
 
   /** Вызывается раз в секунду. Возвращает true, если состояние изменилось. */
   tick(now = Date.now()) {
-    if (!this.deadline || !this.settings.autoAdvance) return false;
-    if (now < this.deadline) return false;
-    const phase = this.phase;
-    this.deadline = null;
-    switch (phase) {
-      case PHASES.REVEAL:
-        this._finishTurn();
-        return true;
-      case PHASES.DISCUSSION:
-        this._startAccusations();
-        return true;
-      case PHASES.ACCUSATION:
-        this._nextAccusation();
-        return true;
-      case PHASES.VOTING:
-      case PHASES.REVOTE:
-        this._resolveVote(this.voteStage);
-        return true;
-      case PHASES.DEFENSE:
-        this._nextDefense();
-        return true;
-      case PHASES.FAREWELL:
-        this._applyExile();
-        return true;
-      case PHASES.SUMMARY:
-        this._afterSummary();
-        return true;
-      default:
-        return false;
+    // Боты ходят сами, независимо от таймеров: иначе соло-партия стоит.
+    let changed = this._botsAct(now);
+
+    if (this.deadline && this.settings.autoAdvance && now >= this.deadline) {
+      const phase = this.phase;
+      this.deadline = null;
+      switch (phase) {
+        case PHASES.REVEAL:
+          this._finishTurn();
+          break;
+        case PHASES.DISCUSSION:
+          this._startAccusations();
+          break;
+        case PHASES.ACCUSATION:
+          this._nextAccusation();
+          break;
+        case PHASES.VOTING:
+        case PHASES.REVOTE:
+          this._resolveVote(this.voteStage);
+          break;
+        case PHASES.DEFENSE:
+          this._nextDefense();
+          break;
+        case PHASES.FAREWELL:
+          this._applyExile();
+          break;
+        case PHASES.SUMMARY:
+          this._afterSummary();
+          break;
+        default:
+          return changed;
+      }
+      changed = true;
     }
+    return changed;
+  }
+
+  // ─────────────────────────────── боты ───────────────────────────────
+
+  /**
+   * Один шаг ботов. Боты ходят с небольшой задержкой, чтобы партия
+   * выглядела живо, а не как мгновенная прокрутка.
+   */
+  _botsAct(now) {
+    if (this.phase === PHASES.REVEAL) {
+      const bot = this.getPlayer(this.currentTurnPlayerId());
+      return bot && bot.isBot ? this._botRevealTurn(bot, now) : false;
+    }
+    if (this.phase === PHASES.ACCUSATION) {
+      const bot = this.getPlayer(this.order[this.turnIndex]);
+      return bot && bot.isBot
+        ? this._botDelay(bot, now, 1200, `accuse:${this.round}:${this.turnIndex}`, () => this._nextAccusation())
+        : false;
+    }
+    if (this.phase === PHASES.DEFENSE) {
+      const bot = this.getPlayer(this.voteCandidates[this.turnIndex]);
+      return bot && bot.isBot
+        ? this._botDelay(bot, now, 1600, `defense:${this.round}:${this.turnIndex}`, () => this._nextDefense())
+        : false;
+    }
+    if (this.phase === PHASES.FAREWELL) {
+      const bot = this.pendingExile.map((id) => this.getPlayer(id)).find((p) => p && p.isBot);
+      return bot
+        ? this._botDelay(bot, now, 1300, `farewell:${this.round}:${bot.id}`, () => this._applyExile())
+        : false;
+    }
+    if (this.phase === PHASES.VOTING || this.phase === PHASES.REVOTE) {
+      let acted = false;
+      for (const bot of this.voters().filter((p) => p.isBot && !p.hasVoted)) {
+        if (this._botVote(bot, now)) acted = true;
+      }
+      return acted;
+    }
+    return false;
+  }
+
+  /** Выполняет действие один раз, выдержав паузу на «размышление». */
+  _botDelay(bot, now, ms, key, fn) {
+    if (bot._actKey !== key) {
+      bot._actKey = key;
+      bot._actAt = now + ms + Math.floor(Math.random() * 500);
+      return false;
+    }
+    if (now < bot._actAt) return false;
+    bot._actKey = null;
+    bot._actAt = 0;
+    try {
+      fn();
+    } catch (err) {
+      this._log(`Бот ${bot.nickname} не смог сделать ход: ${err.message}`, 'warn');
+    }
+    return true;
+  }
+
+  _botRevealTurn(bot, now) {
+    return this._botDelay(bot, now, 900, `reveal:${this.round}:${this.turnIndex}`, () => {
+      let guard = 0;
+      while (this.revealsLeftFor(bot) > 0 && guard < 12) {
+        guard += 1;
+        const mustProfession = this.round === 1 && !bot.revealed.includes('profession');
+        const pool = CHARACTER_CATEGORIES.filter(
+          (c) => !bot.revealed.includes(c) && (!mustProfession || c === 'profession'),
+        );
+        if (!pool.length) break;
+        this.reveal(bot.id, pool[Math.floor(Math.random() * pool.length)]);
+      }
+      // Если ход всё ещё у бота (например, раскрывать больше нечего) — закрываем.
+      if (this.phase === PHASES.REVEAL && this.currentTurnPlayerId() === bot.id) this._finishTurn();
+    });
+  }
+
+  _botVote(bot, now) {
+    return this._botDelay(bot, now, 1100, `vote:${this.round}:${this.voteStage}:${bot.id}`, () => {
+      if (!this.voters().some((p) => p.id === bot.id) || bot.hasVoted) return;
+      const pool = this.phase === PHASES.REVOTE && this.voteCandidates.length
+        ? this.voteCandidates
+        : this.activePlayers().map((p) => p.id);
+      const choices = pool.filter((id) => id !== bot.id);
+      if (!choices.length) return;
+      this.castVote(bot.id, choices[Math.floor(Math.random() * choices.length)]);
+    });
   }
 
   // ─────────────────────────────── снапшот для клиента ───────────────────────────────
@@ -822,6 +914,7 @@ class GameState {
       id: p.id,
       nickname: p.nickname,
       isHost: p.isHost,
+      isBot: !!p.isBot,
       connected: p.connected,
       exiled: p.exiled,
       exiledRound: p.exiledRound || null,

@@ -126,13 +126,20 @@
       if (p.isHost) cls.push('player-chip--host');
       if (p.id === state.me.id) cls.push('player-chip--me');
       if (!p.connected) cls.push('player-chip--out');
+      if (p.isBot) cls.push('player-chip--bot');
       const marks = [];
       if (p.isHost) marks.push('ведущий');
       if (p.id === state.me.id) marks.push('вы');
+      if (p.isBot) marks.push('бот');
       if (!p.connected) marks.push('отключился');
+      // Ботов убирает ведущий — прямо из списка.
+      const remove = p.isBot && state.me.isHost && state.phase === 'lobby'
+        ? `<button class="player-chip__remove" data-remove-bot="${esc(p.id)}" title="Убрать бота" aria-label="Убрать бота">×</button>`
+        : '';
       return `<div class="${cls.join(' ')}">
         <span class="player-chip__name">${esc(p.nickname)}</span>
         <span class="player-chip__marks">${marks.join(' · ')}</span>
+        ${remove}
       </div>`;
     }).join('');
 
@@ -144,10 +151,11 @@
     for (const node of el('settings-panel').querySelectorAll('button, input')) node.disabled = !isHost;
 
     el('btn-start').disabled = !isHost || state.players.length < 2;
+    el('btn-add-bot').disabled = !isHost || state.players.length >= (state.maxPlayers || 16);
     el('start-hint').textContent = !isHost
       ? 'Начать партию может только ведущий.'
       : state.players.length < 2
-        ? 'Пригласите хотя бы одного игрока.'
+        ? 'Пригласите хотя бы одного игрока или добавьте бота.'
         : 'Все на месте? Запускайте.';
 
     // Активные состояния сегментов.

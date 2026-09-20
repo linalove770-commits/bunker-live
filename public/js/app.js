@@ -417,6 +417,15 @@
     el('set-specials').addEventListener('change', (e) => S.updateSettings({ enableSpecials: e.target.checked }).then(afterAction));
 
     el('btn-start').addEventListener('click', () => S.startGame().then(afterAction));
+
+    // Соло-проверка: ведущий добавляет ботов и убирает их из списка.
+    el('btn-add-bot').addEventListener('click', () => S.addBot().then(afterAction));
+    el('lobby-players').addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-remove-bot]');
+      if (!btn) return;
+      S.removeBot(btn.dataset.removeBot).then(afterAction);
+    });
+
     el('btn-leave-lobby').addEventListener('click', () => {
       openConfirm('Выйти из комнаты?', 'Вы покинете лобби. Вернуться можно будет по коду заново.', () => {
         S.leaveRoom().then(() => {

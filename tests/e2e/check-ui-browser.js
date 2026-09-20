@@ -156,20 +156,43 @@ async function main() {
   assert.ok(sheetBox.height > 60, `шторка схлопнута: высота ${Math.round(sheetBox.height)}px`);
   console.log(`✓ шторка персонажа видна: ${Math.round(sheetBox.width)}×${Math.round(sheetBox.height)}`);
 
-  // Сворачивание и разворачивание работают.
+  // Сворачивание: шторка уезжает вниз, оставляя видимым только заголовок.
+  // Поэтому проверяем не высоту (она не меняется), а что тело ушло под экран,
+  // а заголовок с кнопкой остался доступен.
+  const headBox = await host.locator('#my-sheet .sheet__head').boundingBox();
+  assert.ok(headBox.y < viewport.height, `заголовок шторки ушёл за экран: y=${Math.round(headBox.y)}`);
+
   await host.click('#btn-toggle-sheet');
   await host.waitForFunction(
-    () => document.querySelector('#my-sheet').classList.contains('sheet--collapsed'),
+    () => {
+      const body = document.querySelector('#my-sheet-body');
+      return document.querySelector('#my-sheet').classList.contains('sheet--collapsed')
+        && body && body.offsetParent === null;
+    },
     null, { timeout: 5000 },
+  );
+  const collapsedHead = await host.locator('#my-sheet .sheet__head').boundingBox();
+  assert.ok(
+    collapsedHead.y < viewport.height,
+    `заголовок свёрнутой шторки должен остаться виден: y=${Math.round(collapsedHead.y)}`,
   );
   const collapsedBox = await host.locator('#my-sheet').boundingBox();
-  assert.ok(collapsedBox.height < sheetBox.height, 'свёрнутая шторка должна быть ниже');
+  assert.ok(
+    collapsedBox.height < sheetBox.height / 2,
+    `свёрнутая шторка должна схлопнуться до заголовка, а не ${Math.round(collapsedBox.height)}px`,
+  );
+  console.log(`✓ шторка сворачивается до заголовка (${Math.round(collapsedBox.height)}px), карты скрыты`);
+
   await host.click('#btn-toggle-sheet');
   await host.waitForFunction(
-    () => !document.querySelector('#my-sheet').classList.contains('sheet--collapsed'),
+    () => {
+      const body = document.querySelector('#my-sheet-body');
+      return !document.querySelector('#my-sheet').classList.contains('sheet--collapsed')
+        && body && body.offsetParent !== null;
+    },
     null, { timeout: 5000 },
   );
-  console.log('✓ шторка сворачивается и разворачивается');
+  console.log('✓ шторка разворачивается обратно');
 
   // Панель действий подсказывает, что делать.
   const what = (await host.textContent('#action-what')).trim();

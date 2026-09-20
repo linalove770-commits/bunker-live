@@ -34,6 +34,7 @@ function buildLobbyState(room, member) {
       id: m.id,
       nickname: m.nickname,
       isHost: m.isHost,
+      isBot: !!m.isBot,
       connected: m.connected,
       exiled: false,
       revealed: [],
@@ -175,6 +176,22 @@ function registerSocketHandlers(io) {
       if (room.game) room.game.settings = s;
       emitState(room);
       return { settings: s };
+    }));
+
+    socket.on('room:addBot', guard(socket, () => {
+      const room = requireRoom();
+      const bot = roomManager.addBot(room, socket.data.playerId);
+      drainEvents(room);
+      emitState(room);
+      return { botId: bot.id, nickname: bot.nickname };
+    }));
+
+    socket.on('room:removeBot', guard(socket, ({ botId }) => {
+      const room = requireRoom();
+      const removed = roomManager.removeBot(room, socket.data.playerId, botId);
+      drainEvents(room);
+      emitState(room);
+      return { nickname: removed.nickname };
     }));
 
     socket.on('game:start', guard(socket, () => {

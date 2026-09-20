@@ -101,6 +101,12 @@
     defenseDone() {
       return emit('defense:done', {});
     },
+    addBot() {
+      return emit('room:addBot', {});
+    },
+    removeBot(botId) {
+      return emit('room:removeBot', { botId });
+    },
     setNotes(text) {
       return emit('note:set', { text });
     },
