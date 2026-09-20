@@ -235,16 +235,18 @@
 
       <div class="board__col">
         <h2 class="section-title">Мой персонаж <span class="muted" id="my-reveal-count"></span></h2>
-        <div class="sheet" id="my-sheet"></div>
+        <p class="hint">Ваши характеристики — в нижней панели. Она всегда под рукой и видна только вам.</p>
         <div class="field">
           <label class="field__label" for="my-notes">Мои заметки <span class="muted">(видите только вы)</span></label>
-          <textarea class="input" id="my-notes" rows="3" placeholder="Кто что соврал, кого выгоняем…"></textarea>
+          <textarea class="input" id="my-notes" rows="4" placeholder="Кто что соврал, кого выгоняем…"></textarea>
           <span class="hint" id="notes-status"></span>
         </div>
+        <button class="btn btn--ghost btn--block" id="btn-open-sheet">Показать мои карты</button>
       </div>
     </div>
 
     <div class="log" id="game-log"></div>
+
   </section>
 
   <!-- ══════════════ ЭКРАН 4: ФИНАЛ ══════════════ -->
@@ -295,6 +297,17 @@
     </div>
     <div class="help-drawer__body" id="help-body"></div>
   </aside>
+
+  <!-- Шторка персонажа: живёт в оболочке приложения, а не внутри экрана.
+       Внутри экрана её ломала бы анимация появления: transform у предка
+       превращает position: fixed в привязку к этому предку. -->
+  <section class="sheet" id="my-sheet" aria-label="Мои характеристики" hidden>
+    <div class="sheet__head">
+      <span id="sheet-title">Мой персонаж</span>
+      <button class="btn btn--sm btn--ghost" id="btn-toggle-sheet" aria-expanded="true">Свернуть</button>
+    </div>
+    <div class="sheet__body" id="my-sheet-body"></div>
+  </section>
 
   <div class="toasts" id="toasts"></div>
 </div>

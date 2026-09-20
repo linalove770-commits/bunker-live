@@ -429,6 +429,21 @@
   }
 
   function bindGame() {
+    // ── Шторка персонажа ──
+    const sheet = el('my-sheet');
+    const setSheet = (open) => {
+      sheet.classList.toggle('sheet--collapsed', !open);
+      const btn = el('btn-toggle-sheet');
+      if (btn) {
+        btn.textContent = open ? 'Свернуть' : 'Развернуть';
+        btn.setAttribute('aria-expanded', String(open));
+      }
+    };
+    el('btn-toggle-sheet').addEventListener('click', () => {
+      setSheet(sheet.classList.contains('sheet--collapsed'));
+    });
+    el('btn-open-sheet').addEventListener('click', () => setSheet(true));
+
     el('btn-vote-confirm').addEventListener('click', () => {
       if (!pickedVote) return;
       const modal = el('modal-vote');

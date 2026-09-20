@@ -138,12 +138,38 @@ async function main() {
   assert.equal(bunkerCards, 5, `карт бункера: ${bunkerCards}`);
   console.log(`✓ катастрофа и бункер на экране (${bunkerCards} карт)`);
 
-  // У персонажа 11 характеристик.
+  // У персонажа 11 характеристик — они живут в нижней шторке.
   const myCards = await host.locator('#my-sheet .card').count();
   assert.equal(myCards, 11, `карт персонажа: ${myCards}`);
   const hidden = await host.locator('#my-sheet .card--hidden').count();
   assert.equal(hidden, 11, 'на старте все карты закрыты');
   console.log('✓ 11 характеристик, все закрыты на старте');
+
+  // Шторка должна быть реально видна на экране, а не просто лежать в DOM.
+  const sheetBox = await host.locator('#my-sheet').boundingBox();
+  const viewport = host.viewportSize();
+  assert.ok(sheetBox, 'шторка персонажа не отрисована');
+  assert.ok(
+    sheetBox.y < viewport.height && sheetBox.y + sheetBox.height > 0,
+    `шторка вне экрана: y=${Math.round(sheetBox.y)}, высота ${Math.round(sheetBox.height)}`,
+  );
+  assert.ok(sheetBox.height > 60, `шторка схлопнута: высота ${Math.round(sheetBox.height)}px`);
+  console.log(`✓ шторка персонажа видна: ${Math.round(sheetBox.width)}×${Math.round(sheetBox.height)}`);
+
+  // Сворачивание и разворачивание работают.
+  await host.click('#btn-toggle-sheet');
+  await host.waitForFunction(
+    () => document.querySelector('#my-sheet').classList.contains('sheet--collapsed'),
+    null, { timeout: 5000 },
+  );
+  const collapsedBox = await host.locator('#my-sheet').boundingBox();
+  assert.ok(collapsedBox.height < sheetBox.height, 'свёрнутая шторка должна быть ниже');
+  await host.click('#btn-toggle-sheet');
+  await host.waitForFunction(
+    () => !document.querySelector('#my-sheet').classList.contains('sheet--collapsed'),
+    null, { timeout: 5000 },
+  );
+  console.log('✓ шторка сворачивается и разворачивается');
 
   // Панель действий подсказывает, что делать.
   const what = (await host.textContent('#action-what')).trim();

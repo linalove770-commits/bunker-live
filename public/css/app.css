@@ -1534,9 +1534,14 @@
   .home-hero { padding: 36px 28px 28px; }
 }
 
-/* ==========================================================================
-   ПРАВКИ ВЁРСТКИ ПО РЕЗУЛЬТАТАМ БРАУЗЕРНЫХ ПРОВЕРОК
-   ========================================================================== */
+/* --- Правки вёрстки по результатам браузерных проверок --- */
+
+/* Анимация появления экрана без fill-mode: с `both` браузер оставляет
+   у экрана матрицу transform, а любой transform у предка делает
+   position: fixed привязанным к этому предку, а не к окну. */
+.screen:not([hidden]) {
+  animation: screen-in var(--dur-med) var(--ease);
+}
 
 /* Декоративное свечение не должно выходить за пределы обложки по горизонтали. */
 .home-hero__glow {
@@ -1567,4 +1572,62 @@
   max-width: 34px;
   max-height: 34px;
   margin: -7px 0;
+}
+
+/* ==========================================================================
+   ШТОРКА ПЕРСОНАЖА И МЕЛКИЕ ПРАВКИ ЧИТАЕМОСТИ
+   ========================================================================== */
+
+/* Шторка — фиксированная панель по замыслу дизайна. Даём ей плавность
+   и состояние «свёрнуто»: остаётся только заголовок с кнопкой. */
+.sheet {
+  transition: transform var(--dur-med) var(--ease);
+}
+
+.sheet__body {
+  display: grid;
+  gap: 8px;
+}
+
+.sheet--collapsed {
+  transform: translateY(calc(100% - 58px));
+}
+
+/* Контент экрана не должен навсегда прятаться под шторкой: резервируем место
+   под неё, а когда шторка свёрнута — под один заголовок. */
+.screen--game {
+  padding-bottom: min(74dvh, 660px);
+  transition: padding-bottom var(--dur-med) var(--ease);
+}
+
+.screen--game:has(~ .sheet--collapsed),
+.app:has(.sheet--collapsed) .screen--game {
+  padding-bottom: 96px;
+}
+
+@media (min-width: 900px) {
+  .screen--game { padding-bottom: min(58dvh, 520px); }
+  .app:has(.sheet--collapsed) .screen--game { padding-bottom: 96px; }
+}
+
+/* Заголовок шторки: подпись слева, кнопка справа, ничего не наезжает. */
+.sheet__head > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sheet__head .btn { flex: none; }
+
+/* --- Читаемость подписей в статистике бункера --- */
+.bunker-stats {
+  grid-template-columns: repeat(auto-fit, minmax(108px, 1fr));
+}
+
+.bunker-stat span {
+  /* Длинные слова вроде «особенностей» не должны рваться посередине */
+  overflow-wrap: normal;
+  hyphens: none;
+  line-height: 1.3;
 }

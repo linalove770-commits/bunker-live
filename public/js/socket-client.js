@@ -55,9 +55,14 @@
       socket.on('notes:saved', (n) => handlers.notesSaved.forEach((h) => h(n)));
       socket.on('connect', () => {
         // Переподключились — пробуем вернуться в комнату по токену.
+        // Но если в ссылке указана ДРУГАЯ комната, возвращаться в старую нельзя:
+        // иначе переход по чужому приглашению уводит в прежнюю партию.
         const token = api.getToken();
-        const code = api.getCode();
-        if (token && code) api.joinRoom({ code, token }).then(() => {});
+        const stored = api.getCode();
+        const fromUrl = (new URLSearchParams(window.location.search).get('room') || '').toUpperCase();
+        if (!token || !stored) return;
+        if (fromUrl && fromUrl !== stored) return;
+        api.joinRoom({ code: stored, token }).then(() => {});
       });
       return socket;
     },

@@ -76,6 +76,12 @@
       if (active) node.removeAttribute('hidden');
       else node.setAttribute('hidden', '');
     }
+    // Шторка персонажа живёт в оболочке и нужна только в партии.
+    const sheet = el('my-sheet');
+    if (sheet) {
+      if (name === 'game') sheet.removeAttribute('hidden');
+      else sheet.setAttribute('hidden', '');
+    }
     window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' });
   }
 
@@ -255,10 +261,12 @@
     const active = state.players.filter((p) => !p.exiled);
 
     const seatsRow = `<div class="seats">${Array.from({ length: seats }, (_, i) => {
-      const filled = i < active.length;
-      return `<span class="seats__slot ${filled ? 'seats__slot--filled' : ''}" title="Место ${i + 1}">${filled ? '' : '×'}</span>`;
+      // Слоты показывают вместимость бункера: они «загораются», когда лагерь
+      // сократился до числа мест — то есть места вот-вот займут.
+      const filled = active.length <= seats;
+      return `<span class="seats__slot ${filled ? 'seats__slot--filled' : ''}" title="Место ${i + 1} из ${seats}">${i + 1}</span>`;
     }).join('')}</div>
-    <p class="hint">Мест: ${seats}. Заполнены все — партия окончена, лишние уходят.</p>`;
+    <p class="hint">В бункере ${seats} мест(а) на ${state.players.length} выживших — места займут те, кто доживёт до финала.</p>`;
 
     list.innerHTML = seatsRow + state.players.map((p) => {
       const cls = ['seat'];
@@ -289,12 +297,17 @@
   }
 
   function renderSheet(state) {
+    const body = el('my-sheet-body');
+    if (!body) return;
     const me = state.me;
     if (!me || !me.cards || !me.cards.length) {
-      el('my-sheet').innerHTML = '<div class="empty-state">Карты появятся после старта партии.</div>';
+      body.innerHTML = '<div class="empty-state">Карты появятся после старта партии.</div>';
       return;
     }
-    el('my-sheet').innerHTML = me.cards.map((c) => cardHtml(c, {
+    const revealedCount = me.cards.filter((c) => c.revealed).length;
+    const title = el('sheet-title');
+    if (title) title.textContent = `Мой персонаж — раскрыто ${revealedCount} из ${me.cards.length}`;
+    body.innerHTML = me.cards.map((c) => cardHtml(c, {
       mine: true,
       revealed: c.revealed,
     })).join('');
