@@ -1,13 +1,14 @@
-name: Deploy demo to GitHub Pages
+name: Deploy demo to GitHub Pages (через Actions)
 
-# Pages умеет отдавать только файлы, поэтому здесь собирается статическая
-# версия: тот же движок и интерфейс работают в браузере, соперники — боты.
-# Полноценная игра с друзьями по коду приглашения требует Node-сервера
-# (см. render.yaml / Dockerfile в README).
+# ВНИМАНИЕ: на текущем аккаунте GitHub Actions недоступен из-за блокировки
+# биллинга, поэтому автоматический запуск убран — иначе каждый пуш в master
+# даёт красный крестик. Рабочий способ публикации: `npm run deploy:pages`
+# кладёт сборку прямо в ветку gh-pages, и Pages отдаёт её без Actions.
+#
+# Этот workflow оставлен на случай, если Actions снова заработает: запускать
+# вручную из вкладки Actions.
 
 on:
-  push:
-    branches: [master]
   workflow_dispatch:
 
 permissions:

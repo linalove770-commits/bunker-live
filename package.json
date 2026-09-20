@@ -15,7 +15,9 @@
     "test:live": "node tests/e2e/check-bots-live.js 3000",
     "verify": "npm test && npm run test:ui:static && npm run test:e2e && npm run test:ui",
     "build:pages": "node tools/build-pages.js",
-    "test:pages": "node tests/e2e/check-pages-build.js"
+    "test:pages": "node tests/e2e/check-pages-build.js",
+    "deploy:pages": "node tools/deploy-pages.js",
+    "test:pages:live": "node tests/e2e/check-pages-live.js"
   },
   "engines": {
     "node": ">=20"
