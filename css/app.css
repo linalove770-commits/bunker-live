@@ -1,0 +1,1714 @@
+/* ==========================================================================
+   Bunker Live — app.css  (слой 2 из 3)
+   Каркас экранов, навигация, формы, лобби, HUD игры, места, шторка персонажа.
+   Mobile-first: базовые правила — для 360px, расширения — в @media (min-width).
+   Все классы — строго из CSS-контракта (SPEC.md, раздел 6).
+   ========================================================================== */
+
+/* ==========================================================================
+   1. КАРКАС: .app И .screen
+   ========================================================================== */
+.app {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gutter);
+  width: 100%;
+  max-width: var(--content-max);
+  min-height: 100dvh;
+  margin-inline: auto;
+  padding: var(--gutter);
+  padding-bottom: calc(var(--gutter) + env(safe-area-inset-bottom, 0px));
+  padding-left: calc(var(--gutter) + env(safe-area-inset-left, 0px));
+  padding-right: calc(var(--gutter) + env(safe-area-inset-right, 0px));
+}
+
+/* Экран виден, пока нет атрибута hidden (переключение делает JS) */
+.screen:not([hidden]) {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gutter);
+  flex: 1 1 auto;
+  min-width: 0;
+  animation: screen-in var(--dur-med) var(--ease) both;
+}
+
+@keyframes screen-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Главный экран: вход/создание комнаты */
+.screen--home:not([hidden]) {
+  justify-content: center;
+  gap: 16px;
+  width: 100%;
+  max-width: 520px;
+  margin-inline: auto;
+  padding-block: 8px 24px;
+}
+
+/* Лобби: список игроков + настройки хоста */
+.screen--lobby:not([hidden]) {
+  gap: 14px;
+}
+
+/* Игровой экран: HUD сверху, доска и места — ниже */
+.screen--game:not([hidden]) {
+  gap: 12px;
+}
+
+/* Финал: итоги и раскрытые роли */
+.screen--finale:not([hidden]) {
+  justify-content: flex-start;
+  gap: 14px;
+}
+
+/* ==========================================================================
+   2. ТОПБАР
+   ========================================================================== */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+  min-height: var(--tap);
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-m);
+  background: var(--bg-2);
+  -webkit-backdrop-filter: blur(var(--blur));
+  backdrop-filter: blur(var(--blur));
+  box-shadow: var(--shadow-1);
+}
+
+.topbar__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text);
+  min-width: 0;
+}
+
+.topbar__title::before {
+  content: "";
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 10px var(--accent-line);
+}
+
+.topbar__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  font-size: 0.8125rem;
+  color: var(--text-dim);
+  min-width: 0;
+}
+
+/* ==========================================================================
+   3. КНОПКИ
+   ========================================================================== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: var(--tap);
+  padding: 10px 16px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-m);
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  user-select: none;
+  transition: transform var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease),
+    border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
+}
+
+.btn:hover {
+  border-color: var(--accent-line);
+  color: var(--text);
+}
+
+.btn:active {
+  transform: translateY(1px) scale(0.99);
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--accent-2);
+  outline-offset: 2px;
+}
+
+/* Основное действие — янтарь */
+.btn--primary {
+  background: linear-gradient(180deg, #ffc266, var(--accent));
+  border-color: var(--accent);
+  color: #241703;
+  box-shadow: 0 6px 18px rgba(245, 166, 35, 0.22);
+}
+
+.btn--primary:hover {
+  background: linear-gradient(180deg, #ffd08a, #f0a01c);
+  color: #241703;
+}
+
+/* Второстепенное — прозрачное */
+.btn--ghost {
+  background: transparent;
+  border-color: var(--border);
+  color: var(--text-dim);
+}
+
+.btn--ghost:hover {
+  background: var(--info-soft);
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+
+/* Опасное действие — красный */
+.btn--danger {
+  background: var(--danger-soft);
+  border-color: var(--danger-line);
+  color: #ffd3d3;
+}
+
+.btn--danger:hover {
+  background: rgba(255, 92, 92, 0.22);
+  border-color: var(--danger);
+  color: #ffe4e4;
+}
+
+/* Компактная кнопка (тач-таргет сохраняем) */
+.btn--sm {
+  min-height: var(--tap);
+  padding: 6px 12px;
+  font-size: 0.8125rem;
+  border-radius: var(--radius-s);
+}
+
+/* Кнопка на всю ширину */
+.btn--block {
+  display: flex;
+  width: 100%;
+}
+
+.btn[disabled],
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+  filter: grayscale(0.4);
+}
+
+.btn[disabled]:hover,
+.btn:disabled:hover {
+  border-color: var(--border-strong);
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+.btn--primary[disabled]:hover,
+.btn--primary:disabled:hover {
+  background: linear-gradient(180deg, #ffc266, var(--accent));
+  color: #241703;
+}
+
+.btn--danger[disabled]:hover,
+.btn--danger:disabled:hover {
+  background: var(--danger-soft);
+  color: #ffd3d3;
+}
+
+.btn--ghost[disabled]:hover,
+.btn--ghost:disabled:hover {
+  background: transparent;
+  color: var(--text-dim);
+}
+
+/* ==========================================================================
+   4. ФОРМЫ
+   ========================================================================== */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.field__label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+}
+
+.input {
+  width: 100%;
+  min-height: var(--tap);
+  padding: 10px 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-m);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 1rem;
+  transition: border-color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease),
+    background-color var(--dur-fast) var(--ease);
+}
+
+.input:hover {
+  border-color: var(--border-strong);
+  background: var(--surface-2);
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--accent-2);
+  background: var(--surface-2);
+  box-shadow: 0 0 0 3px var(--accent-2-soft);
+}
+
+.input[disabled],
+.input:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.input[aria-invalid="true"],
+.input.is-invalid {
+  border-color: var(--danger-line);
+  box-shadow: 0 0 0 3px var(--danger-soft);
+}
+
+/* Крупный ввод кода комнаты: моноширинный, разрядка */
+.input--code {
+  min-height: 60px;
+  padding: 12px 16px;
+  font-family: var(--font-mono);
+  font-size: clamp(1.5rem, 9vw, 2.25rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: 0.35em;
+  text-indent: 0.35em; /* компенсация трекинга после последнего символа */
+  text-align: center;
+  text-transform: uppercase;
+  color: var(--accent);
+  background: var(--bg-1);
+  border-color: var(--accent-line);
+  caret-color: var(--accent);
+}
+
+.input--code:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.input--code::placeholder {
+  color: var(--text-mute);
+  letter-spacing: 0.35em;
+}
+
+.hint {
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: var(--text-mute);
+}
+
+.error-text {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: #ffb3b3;
+}
+
+.error-text::before {
+  content: "!";
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  margin-top: 1px;
+  border-radius: 50%;
+  background: var(--danger-soft);
+  border: 1px solid var(--danger-line);
+  color: var(--danger);
+  font-size: 0.6875rem;
+  font-weight: 700;
+}
+
+/* ==========================================================================
+   5. ЛОББИ
+   ========================================================================== */
+.lobby {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.lobby__code {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: stretch;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-m);
+  background: var(--bg-2);
+  -webkit-backdrop-filter: blur(var(--blur));
+  backdrop-filter: blur(var(--blur));
+  box-shadow: var(--shadow-1);
+}
+
+/* Крупный бейдж кода комнаты */
+.code-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--tap);
+  padding: 8px 14px;
+  border: 1px dashed var(--accent-line);
+  border-radius: var(--radius-m);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: clamp(1.5rem, 8.5vw, 2rem);
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  text-indent: 0.3em;
+  text-transform: uppercase;
+  user-select: all;
+  cursor: copy;
+}
+
+.copy-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.copy-row > .btn,
+.copy-row > .input {
+  flex: 1 1 160px;
+  min-width: 0;
+}
+
+/* Сетка игроков в лобби */
+.players-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.player-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: var(--tap);
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-m);
+  background: var(--surface);
+  font-size: 0.875rem;
+  color: var(--text);
+  transition: border-color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease),
+    opacity var(--dur-fast) var(--ease);
+}
+
+.player-chip::before {
+  content: "";
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--text-mute);
+}
+
+.player-chip--host {
+  border-color: var(--accent-line);
+  background: linear-gradient(180deg, var(--accent-soft), var(--surface));
+}
+
+.player-chip--host::before {
+  background: var(--accent);
+  box-shadow: 0 0 10px var(--accent-line);
+}
+
+.player-chip--me {
+  border-color: var(--accent-2-line);
+  box-shadow: 0 0 0 1px var(--accent-2-soft) inset;
+}
+
+.player-chip--me::before {
+  background: var(--accent-2);
+  box-shadow: 0 0 10px var(--accent-2-line);
+}
+
+.player-chip--out {
+  opacity: 0.5;
+  border-style: dashed;
+  text-decoration: line-through;
+  text-decoration-color: var(--text-mute);
+}
+
+.player-chip--out::before {
+  background: var(--danger);
+}
+
+/* ==========================================================================
+   6. НАСТРОЙКИ ЛОББИ
+   ========================================================================== */
+.settings {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 4px 12px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-m);
+  background: var(--bg-2);
+  -webkit-backdrop-filter: blur(var(--blur));
+  backdrop-filter: blur(var(--blur));
+}
+
+.settings__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+  min-height: var(--tap);
+  padding-block: 8px;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.9375rem;
+  color: var(--text-dim);
+}
+
+.settings__row:last-child {
+  border-bottom: 0;
+}
+
+/* Сегментированный переключатель */
+.segmented {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+}
+
+.segmented__item {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--tap);
+  min-width: var(--tap);
+  padding: 6px 14px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease),
+    border-color var(--dur-fast) var(--ease);
+}
+
+.segmented__item:hover {
+  color: var(--text);
+  background: var(--info-soft);
+}
+
+.segmented__item.is-active {
+  background: var(--accent-soft);
+  border-color: var(--accent-line);
+  color: var(--accent);
+}
+
+.segmented__item[disabled],
+.segmented__item:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Переключатель: работает и как контейнер с input внутри, и как сам input */
+.switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: var(--tap);
+  padding: 2px;
+  cursor: pointer;
+  font-size: 0.9375rem;
+  color: var(--text-dim);
+  user-select: none;
+}
+
+.switch input[type="checkbox"],
+.switch[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  position: relative;
+  flex: none;
+  width: 50px;
+  height: 28px;
+  margin: 0;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  background: var(--surface-2);
+  cursor: pointer;
+  transition: background-color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease);
+}
+
+.switch input[type="checkbox"]::after,
+.switch[type="checkbox"]::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--text-mute);
+  transition: transform var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease);
+}
+
+.switch input[type="checkbox"]:checked,
+.switch[type="checkbox"]:checked {
+  background: var(--ok-soft);
+  border-color: var(--ok-line);
+}
+
+.switch input[type="checkbox"]:checked::after,
+.switch[type="checkbox"]:checked::after {
+  transform: translateX(22px);
+  background: var(--ok);
+}
+
+.switch input[type="checkbox"]:focus-visible,
+.switch[type="checkbox"]:focus-visible {
+  outline: 2px solid var(--accent-2);
+  outline-offset: 2px;
+}
+
+.switch input[type="checkbox"]:disabled,
+.switch[type="checkbox"]:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ==========================================================================
+   7. ИГРОВОЙ HUD
+   ========================================================================== */
+.hud {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-m);
+  background: var(--bg-2);
+  -webkit-backdrop-filter: blur(var(--blur));
+  backdrop-filter: blur(var(--blur));
+  box-shadow: var(--shadow-1);
+}
+
+.phase-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+  min-height: 32px;
+  padding: 4px 12px;
+  border: 1px solid var(--accent-line);
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.phase-badge--voting {
+  border-color: var(--danger-line);
+  background: var(--danger-soft);
+  color: #ffb3b3;
+}
+
+/* Таймер обратного отсчёта */
+.timer {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1 1 132px;
+  min-width: 132px;
+  padding-bottom: 14px;
+  font-family: var(--font-mono);
+  font-size: 0.9375rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent-2);
+}
+
+/* Жёлоб таймера */
+.timer::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  box-shadow: inset 0 0 0 1px var(--border);
+}
+
+/* Заполнение: JS задаёт --timer-progress (0..1) и/или --timer-scale (0..1) */
+.timer__bar {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: calc(var(--timer-progress, 1) * 100%);
+  max-width: 100%;
+  height: 8px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--accent-2), var(--accent));
+  transform: scaleX(var(--timer-scale, 1));
+  transform-origin: left center;
+  transition: width var(--dur-med) linear, transform var(--dur-med) linear,
+    background-color var(--dur-med) var(--ease);
+}
+
+.timer--warn {
+  color: var(--accent);
+}
+
+.timer--warn .timer__bar {
+  background: linear-gradient(90deg, var(--accent), #ffd08a);
+}
+
+.timer--danger {
+  color: var(--danger);
+  font-weight: 700;
+}
+
+.timer--danger .timer__bar {
+  background: linear-gradient(90deg, #ff8a8a, var(--danger));
+  animation: timer-pulse 900ms var(--ease) infinite;
+}
+
+@keyframes timer-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+
+/* ==========================================================================
+   8. ДОСКА: КОЛОНКИ, БУНКЕР, КАТАСТРОФА
+   ========================================================================== */
+.board {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  align-items: start;
+  min-width: 0;
+}
+
+.board__col {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.board__col > h2,
+.board__col > h3 {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+}
+
+.board__col > h2::after,
+.board__col > h3::after {
+  content: "";
+  display: block;
+  height: 1px;
+  margin-top: 6px;
+  background: linear-gradient(90deg, var(--border-strong), transparent);
+}
+
+/* Карта свойства бункера */
+.bunker-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--border-strong);
+  border-radius: var(--radius-m);
+  background: var(--surface);
+  box-shadow: var(--shadow-1);
+}
+
+.bunker-card--advantage {
+  border-left-color: var(--ok);
+  background: linear-gradient(90deg, var(--ok-soft), var(--surface) 55%);
+}
+
+.bunker-card--hazard {
+  border-left-color: var(--danger);
+  background: linear-gradient(90deg, var(--danger-soft), var(--surface) 55%);
+}
+
+/* Катастрофа — самый громкий элемент доски */
+.catastrophe {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px;
+  border: 1px solid var(--danger-line);
+  border-radius: var(--radius-m);
+  background:
+    radial-gradient(520px 200px at 0% 0%, var(--danger-soft), transparent 70%),
+    linear-gradient(180deg, var(--surface-2), var(--surface));
+  box-shadow: var(--shadow-2);
+}
+
+.catastrophe__severity {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 28px;
+  padding: 3px 10px;
+  border: 1px solid var(--danger-line);
+  border-radius: 999px;
+  background: var(--danger-soft);
+  color: #ffb3b3;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+/* ==========================================================================
+   9. МЕСТА В БУНКЕРЕ
+   ========================================================================== */
+.seats {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(56px, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.seats__slot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 56px;
+  padding: 6px;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-m);
+  background: rgba(148, 163, 184, 0.05);
+  color: var(--text-mute);
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  text-align: center;
+}
+
+.seats__slot--filled {
+  border-style: solid;
+  border-color: var(--accent-2-line);
+  background: var(--accent-2-soft);
+  color: var(--text);
+  font-weight: 600;
+  box-shadow: 0 0 0 1px var(--accent-2-soft) inset;
+}
+
+/* ==========================================================================
+   10. СПИСОК ИГРОКОВ В ИГРЕ
+   ========================================================================== */
+.seat-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.seat {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-m);
+  background: var(--surface);
+  color: var(--text);
+  transition: border-color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease),
+    opacity var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
+}
+
+.seat__avatar {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-2);
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  overflow: hidden;
+}
+
+.seat__name {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.seat__status {
+  flex: none;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  color: var(--text-mute);
+  text-align: right;
+}
+
+/* Активный говорящий */
+.seat--speaking,
+.seat__speaking {
+  border-color: var(--accent-2-line);
+  background: linear-gradient(90deg, var(--accent-2-soft), var(--surface) 60%);
+  box-shadow: 0 0 0 1px var(--accent-2-soft) inset, 0 0 18px rgba(34, 211, 238, 0.16);
+  animation: speak-pulse 1600ms var(--ease) infinite;
+}
+
+.seat--speaking .seat__avatar,
+.seat__speaking .seat__avatar {
+  border-color: var(--accent-2);
+  color: var(--accent-2);
+}
+
+.seat--speaking .seat__status,
+.seat__speaking .seat__status {
+  color: var(--accent-2);
+}
+
+@keyframes speak-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 1px var(--accent-2-soft) inset, 0 0 10px rgba(34, 211, 238, 0.1);
+  }
+  50% {
+    box-shadow: 0 0 0 1px var(--accent-2-line) inset, 0 0 22px rgba(34, 211, 238, 0.26);
+  }
+}
+
+/* Ход текущего игрока — акцентная рамка */
+.seat--current {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent-soft) inset, 0 6px 18px rgba(245, 166, 35, 0.16);
+}
+
+.seat--current .seat__status {
+  color: var(--accent);
+}
+
+/* Этот игрок — я */
+.seat--me {
+  border-color: var(--accent-2-line);
+  background: linear-gradient(90deg, var(--accent-2-soft), var(--surface) 60%);
+}
+
+.seat--me .seat__avatar {
+  border-color: var(--accent-2);
+  color: var(--accent-2);
+}
+
+/* Изгнанный */
+.seat--exiled {
+  opacity: 0.5;
+  border-style: dashed;
+  border-color: var(--border);
+  background: rgba(148, 163, 184, 0.05);
+  filter: grayscale(0.7);
+}
+
+.seat--exiled .seat__name {
+  text-decoration: line-through;
+  text-decoration-color: var(--danger);
+  text-decoration-thickness: 2px;
+  color: var(--text-mute);
+}
+
+.seat--exiled .seat__status {
+  color: var(--danger);
+}
+
+.seat--exiled .seat__avatar {
+  color: var(--text-mute);
+}
+
+/* ==========================================================================
+   11. ШТОРКА ПЕРСОНАЖА (.sheet)
+   Мобильные: выезжает снизу. Управляется атрибутом hidden.
+   ========================================================================== */
+.sheet {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 55;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 82dvh;
+  padding: 8px 12px calc(16px + env(safe-area-inset-bottom, 0px));
+  border: 1px solid var(--border-strong);
+  border-bottom: 0;
+  border-radius: var(--radius-l) var(--radius-l) 0 0;
+  background: var(--bg-2);
+  -webkit-backdrop-filter: blur(var(--blur));
+  backdrop-filter: blur(var(--blur));
+  box-shadow: var(--shadow-2);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  /* Без fill-mode: с `both` анимация продолжает удерживать transform и
+     перебивает состояние .sheet--collapsed (анимации в каскаде выше
+     обычных объявлений). */
+  animation: sheet-in var(--dur-med) var(--ease);
+}
+
+.sheet__head {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: var(--tap);
+  padding: 4px 0 8px;
+  background: linear-gradient(180deg, var(--bg-1) 60%, transparent);
+  border-bottom: 1px solid var(--border);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+}
+
+.sheet__head::before {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 42px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--border-strong);
+}
+
+@keyframes sheet-in {
+  from {
+    transform: translateY(100%);
+    opacity: 0.4;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+/* ==========================================================================
+   12. АДАПТИВ
+   ========================================================================== */
+@media (min-width: 480px) {
+  :root {
+    --gutter: 16px;
+  }
+
+  .players-grid {
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  }
+
+  .seats {
+    grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+  }
+}
+
+@media (min-width: 700px) {
+  .lobby__code {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+  }
+
+  .sheet {
+    left: auto;
+    right: 16px;
+    bottom: 16px;
+    width: min(420px, calc(100vw - 32px));
+    max-height: min(78dvh, 720px);
+    padding: 8px 16px 16px;
+    border-bottom: 1px solid var(--border-strong);
+    border-radius: var(--radius-l);
+  }
+}
+
+/* Широкие экраны: доска в две колонки */
+@media (min-width: 900px) {
+  .board {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .catastrophe {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Очень широкие: доска в три колонки */
+@media (min-width: 1240px) {
+  .board {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .catastrophe {
+    grid-column: auto;
+  }
+}
+
+/* Горизонтальная ориентация на телефоне: экономим высоту */
+@media (max-height: 520px) and (orientation: landscape) {
+  .sheet {
+    max-height: 92dvh;
+  }
+
+  .seats__slot {
+    min-height: 48px;
+  }
+}
+
+/* ==========================================================================
+   13. ОТКЛЮЧЕНИЕ АНИМАЦИЙ ПО ЗАПРОСУ СИСТЕМЫ
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  .screen:not([hidden]),
+  .sheet,
+  .timer__bar,
+  .timer--danger .timer__bar,
+  .seat--speaking,
+  .seat__speaking {
+    animation: none;
+    transition: none;
+  }
+
+  .btn,
+  .btn:active,
+  .input,
+  .segmented__item,
+  .switch input[type="checkbox"],
+  .switch[type="checkbox"],
+  .switch input[type="checkbox"]::after,
+  .switch[type="checkbox"]::after,
+  .player-chip,
+  .seat,
+  .bunker-card,
+  .seats__slot {
+    transition: none;
+    transform: none;
+  }
+}
+
+/* ==========================================================================
+   РАСШИРЕНИЯ РАЗМЕТКИ (слой интерфейса)
+   Классы, которые понадобились сверх базового контракта: обложка, панель
+   действий «что делать сейчас», состав лагеря, итоги партии.
+   Стилизуются только существующими токенами — палитра и ритм не меняются.
+   ========================================================================== */
+
+/* --- Служебная типографика --- */
+.muted { color: var(--text-mute); font-weight: 400; }
+
+.section-title {
+  margin: 0 0 8px;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.section-title .muted { text-transform: none; letter-spacing: 0; font-size: 0.75rem; }
+
+/* --- Шапка игры --- */
+.hud__left,
+.hud__right { display: inline-flex; align-items: center; gap: 8px; min-width: 0; }
+
+.hud__round {
+  font-size: 0.875rem;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+
+/* --- Панель «что делать сейчас» --- */
+.action-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 10px 0;
+  padding: 12px 14px;
+  border: 1px solid var(--accent-line);
+  border-left-width: 4px;
+  border-radius: var(--radius-m);
+  background: linear-gradient(90deg, var(--accent-soft), var(--bg-2) 70%);
+  box-shadow: var(--shadow-1);
+}
+
+.action-panel__what {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.action-panel__hint {
+  font-size: 0.875rem;
+  line-height: 1.45;
+  color: var(--text-dim);
+}
+
+.action-panel__buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+/* --- Обложка --- */
+.home-hero {
+  position: relative;
+  overflow: hidden;
+  padding: 28px 18px 22px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-l);
+  background: var(--bg-1);
+  box-shadow: var(--shadow-1);
+}
+
+.home-hero__glow {
+  position: absolute;
+  inset: -40% -20% auto;
+  height: 260px;
+  background: radial-gradient(60% 60% at 50% 40%, var(--accent-soft), transparent 70%);
+  pointer-events: none;
+}
+
+.home-hero__title {
+  position: relative;
+  margin: 0 0 10px;
+  font-size: clamp(1.9rem, 7vw, 3rem);
+  line-height: 1.05;
+  letter-spacing: 0.02em;
+}
+
+.home-hero__accent { color: var(--accent); }
+
+.home-hero__lead {
+  position: relative;
+  margin: 0 0 16px;
+  max-width: 62ch;
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  color: var(--text-dim);
+}
+
+.home-hero__lead strong { color: var(--accent); }
+
+.home-hero__facts {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.home-hero__facts li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  font-size: 0.8125rem;
+  color: var(--text-dim);
+}
+
+.home-hero__facts span { color: var(--accent-2); font-weight: 700; }
+
+/* --- Панели входа --- */
+.home-panels {
+  display: grid;
+  gap: 12px;
+  margin: 14px 0;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-m);
+  background: var(--surface);
+  box-shadow: var(--shadow-1);
+}
+
+.panel__title { margin: 0; font-size: 1.0625rem; }
+
+.panel__text {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--text-dim);
+}
+
+/* --- Блок «как играют» --- */
+.home-rules { margin: 18px 0 8px; }
+
+.rules-strip {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.rule-step {
+  display: grid;
+  grid-template-columns: 32px 1fr;
+  gap: 4px 12px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-m);
+  background: var(--surface);
+}
+
+.rule-step__num {
+  grid-row: 1 / span 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--accent-line);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-weight: 700;
+}
+
+.rule-step b { font-size: 0.9375rem; }
+.rule-step p { margin: 0; font-size: 0.875rem; line-height: 1.5; color: var(--text-dim); }
+
+/* --- Лобби --- */
+.lobby__players { margin: 14px 0; }
+
+.player-chip__name {
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.player-chip__marks {
+  font-size: 0.6875rem;
+  letter-spacing: 0.04em;
+  color: var(--text-mute);
+}
+
+.lobby__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin: 16px 0 8px;
+}
+
+.lobby__actions .btn--block { flex: 1 1 220px; }
+
+.code-label {
+  font-size: 0.6875rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+}
+
+.seats-preview {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-m);
+  background: rgba(148, 163, 184, 0.05);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--text-dim);
+}
+
+.seats-preview b { color: var(--accent-2); }
+
+.settings__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9375rem;
+  color: var(--text-dim);
+}
+
+/* Настройки неведущего выглядят неактивными */
+.settings.is-locked { opacity: 0.55; }
+.settings.is-locked .segmented__item { cursor: not-allowed; }
+
+/* --- Состав лагеря --- */
+.seat { flex-wrap: wrap; }
+
+.seat__cards {
+  flex: 1 0 100%;
+  display: grid;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.seat__cards .card { padding: 8px 10px; }
+.seat__cards .card__text { font-size: 0.8125rem; }
+.seat__cards .card__tip { font-size: 0.75rem; }
+
+.seat__empty {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--text-mute);
+  font-style: italic;
+}
+
+/* --- Бункер --- */
+.bunker-box { display: flex; flex-direction: column; gap: 10px; }
+
+.bunker-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(84px, 1fr));
+  gap: 8px;
+}
+
+.bunker-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-s);
+  background: var(--surface);
+}
+
+.bunker-stat b {
+  font-family: var(--font-mono);
+  font-size: 1.0625rem;
+  color: var(--accent-2);
+}
+
+.bunker-stat span { font-size: 0.6875rem; color: var(--text-mute); }
+
+.bunker-cards { display: grid; gap: 8px; }
+
+/* --- Финал --- */
+.finale { display: flex; flex-direction: column; gap: 16px; }
+
+.finale__verdict {
+  padding: 18px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-l);
+  background: var(--surface);
+  box-shadow: var(--shadow-2);
+}
+
+.finale__verdict--ok { border-color: var(--ok-line); background: linear-gradient(180deg, var(--ok-soft), var(--surface) 60%); }
+.finale__verdict--warn { border-color: var(--accent-line); background: linear-gradient(180deg, var(--accent-soft), var(--surface) 60%); }
+.finale__verdict--danger { border-color: var(--danger-line); background: linear-gradient(180deg, var(--danger-soft), var(--surface) 60%); }
+
+.finale__score {
+  font-family: var(--font-mono);
+  font-size: 2.25rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--accent);
+}
+
+.finale__score span { font-size: 1rem; color: var(--text-mute); }
+
+.finale__player {
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-m);
+  background: var(--surface);
+}
+
+.finale__player h4 { margin: 0 0 8px; font-size: 1rem; }
+
+.finale__cards { display: grid; gap: 6px; }
+
+/* --- Хроника --- */
+.log__round {
+  display: inline-block;
+  min-width: 26px;
+  color: var(--text-mute);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+}
+
+@media (min-width: 720px) {
+  .home-panels { grid-template-columns: 1fr 1fr; }
+  .rules-strip { grid-template-columns: 1fr 1fr; }
+}
+
+@media (min-width: 900px) {
+  .rules-strip { grid-template-columns: repeat(4, 1fr); }
+  .home-hero { padding: 36px 28px 28px; }
+}
+
+/* --- Правки вёрстки по результатам браузерных проверок --- */
+
+/* Анимация появления экрана без fill-mode: с `both` браузер оставляет
+   у экрана матрицу transform, а любой transform у предка делает
+   position: fixed привязанным к этому предку, а не к окну. */
+.screen:not([hidden]) {
+  animation: screen-in var(--dur-med) var(--ease);
+}
+
+/* Декоративное свечение не должно выходить за пределы обложки по горизонтали. */
+.home-hero__glow {
+  inset: -40% 0 auto;
+  left: 0;
+  right: 0;
+}
+
+/* Абсолютные подсказки не должны создавать горизонтальную прокрутку страницы. */
+.app {
+  overflow-x: clip;
+}
+
+/* На узких экранах подсказка прижимается к правому краю иконки, а не к левому:
+   так она остаётся внутри вьюпорта и читается на телефоне. */
+@media (max-width: 640px) {
+  .tooltip {
+    left: auto;
+    right: 0;
+    max-width: calc(100vw - 24px);
+  }
+}
+
+/* Тач-таргет иконки-подсказки доводим до комфортного минимума. */
+.tip__icon {
+  width: var(--tap, 44px);
+  height: var(--tap, 44px);
+  max-width: 34px;
+  max-height: 34px;
+  margin: -7px 0;
+}
+
+/* ==========================================================================
+   ШТОРКА ПЕРСОНАЖА И МЕЛКИЕ ПРАВКИ ЧИТАЕМОСТИ
+   ========================================================================== */
+
+/* Шторка — фиксированная панель по замыслу дизайна. Даём ей плавность
+   и состояние «свёрнуто»: остаётся только заголовок с кнопкой. */
+.sheet {
+  transition: transform var(--dur-med) var(--ease);
+}
+
+.sheet__body {
+  display: grid;
+  gap: 8px;
+}
+
+/* Свёрнутая шторка: остаётся только заголовок с кнопкой. Скрываем тело
+   вместо сдвига на вычисленную высоту — так не остаётся щели и не нужны
+   магические пиксели. */
+.sheet--collapsed .sheet__body {
+  display: none;
+}
+
+.sheet--collapsed {
+  max-height: none;
+}
+
+/* Контент экрана не должен навсегда прятаться под шторкой: резервируем место
+   под неё, а когда шторка свёрнута — под один заголовок. */
+.screen--game {
+  padding-bottom: min(74dvh, 660px);
+  transition: padding-bottom var(--dur-med) var(--ease);
+}
+
+.screen--game:has(~ .sheet--collapsed),
+.app:has(.sheet--collapsed) .screen--game {
+  padding-bottom: 96px;
+}
+
+@media (min-width: 900px) {
+  .screen--game { padding-bottom: min(58dvh, 520px); }
+  .app:has(.sheet--collapsed) .screen--game { padding-bottom: 96px; }
+}
+
+/* Заголовок шторки: подпись слева, кнопка справа, ничего не наезжает. */
+.sheet__head > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sheet__head .btn { flex: none; }
+
+/* --- Читаемость подписей в статистике бункера --- */
+.bunker-stats {
+  grid-template-columns: repeat(auto-fit, minmax(108px, 1fr));
+}
+
+.bunker-stat span {
+  /* Длинные слова вроде «особенностей» не должны рваться посередине */
+  overflow-wrap: normal;
+  hyphens: none;
+  line-height: 1.3;
+}
+
+/* ==========================================================================
+   БОТЫ: соло-проверка партии
+   ========================================================================== */
+
+.lobby__bots {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.lobby__bots .hint { margin: 0; }
+
+/* Бот отличается пунктирной рамкой и циановым именем — не путается с людьми. */
+.player-chip--bot {
+  border-style: dashed;
+}
+
+.player-chip--bot .player-chip__name {
+  color: var(--accent-2);
+}
+
+.player-chip {
+  align-items: center;
+  gap: 6px;
+}
+
+.player-chip__remove {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  margin-left: auto;
+  border: 1px solid var(--border-strong);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-mute);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease);
+}
+
+.player-chip__remove:hover,
+.player-chip__remove:focus-visible {
+  border-color: var(--danger-line);
+  color: var(--danger);
+}
+
+/* ==========================================================================
+   ПРИМЕЧАНИЕ СТАТИЧЕСКОЙ СБОРКИ
+   Поясняет, что версия на GitHub Pages играется с ботами на одном устройстве.
+   ========================================================================== */
+
+.local-note {
+  margin: 0 0 6px;
+  padding: 12px 14px;
+  border: 1px dashed var(--accent-2-line);
+  border-left-width: 4px;
+  border-radius: var(--radius-m);
+  background: var(--accent-2-soft);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--text-dim);
+}
+
+.local-note strong { color: var(--accent-2); }

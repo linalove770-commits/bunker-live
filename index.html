@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0a0d14">
+<title>Бункер Live — игра на выживание</title>
+<meta name="description" content="Онлайн-игра «Бункер»: места в убежище меньше, чем выживших. Создайте комнату, отправьте друзьям код приглашения и докажите, что именно вы нужны бункеру.">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/app.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>☢</text></svg>">
+</head>
+<body>
+<div class="app">
+
+  <!-- ══════════════ ЭКРАН 1: ВХОД ══════════════ -->
+  <section class="screen screen--home is-active" id="screen-home">
+    <div class="home-hero">
+      <div class="home-hero__glow" aria-hidden="true"></div>
+      <h1 class="home-hero__title">Бункер <span class="home-hero__accent">Live</span></h1>
+      <p class="home-hero__lead">
+        Катастрофа уже случилась. У входа в убежище — выжившие, но мест хватит не всем:
+        по правилам игры в бункер попадает <strong>половина</strong>.
+        Докажите, что именно вы полезны.
+      </p>
+      <ul class="home-hero__facts">
+        <li><span>2–16</span> игроков</li>
+        <li><span>~40 мин</span> партия</li>
+        <li><span>0 ₽</span> и без регистрации</li>
+      </ul>
+    </div>
+
+    <div class="home-panels">
+      <div class="panel">
+        <h2 class="panel__title">Создать бункер</h2>
+        <p class="panel__text">Вы станете ведущим: получите код комнаты и ссылку-приглашение для друзей.</p>
+        <div class="field">
+          <label class="field__label" for="create-nick">Ваше имя</label>
+          <input class="input" id="create-nick" maxlength="20" placeholder="Например, Натали" autocomplete="nickname">
+        </div>
+        <button class="btn btn--primary btn--block" id="btn-create">Создать комнату</button>
+        <p class="error-text" id="create-error" hidden></p>
+      </div>
+      <div class="panel" id="panel-join" data-local-hide>
+        <h2 class="panel__title">Войти по коду</h2>
+        <p class="panel__text">Ведущий прислал код из 5 символов? Введите его и своё имя.</p>
+        <div class="field">
+          <label class="field__label" for="join-code">Код комнаты</label>
+          <input class="input input--code" id="join-code" maxlength="5" placeholder="XXXXX"
+                 autocapitalize="characters" autocomplete="off" spellcheck="false">
+        </div>
+        <div class="field">
+          <label class="field__label" for="join-nick">Ваше имя</label>
+          <input class="input" id="join-nick" maxlength="20" placeholder="Как вас звать" autocomplete="nickname">
+        </div>
+        <button class="btn btn--primary btn--block" id="btn-join">Войти в бункер</button>
+        <p class="error-text" id="join-error" hidden></p>
+        <p class="hint" id="room-preview" hidden></p>
+      </div>
+    </div>
+
+    <p class="local-note" id="local-note" hidden>
+      Это демо-сборка без сервера: партия идёт на одном устройстве, соперники — боты.
+      Чтобы играть с друзьями по коду приглашения, поднимите серверную версию —
+      как это сделать, написано в README проекта.
+    </p>
+
+    <div class="home-rules">
+      <h2 class="section-title">Как играют в «Бункер»</h2>
+      <div class="rules-strip">
+        <div class="rule-step"><span class="rule-step__num">1</span><b>Раздача</b><p>Каждый получает персонажа: профессию, здоровье, хобби, багаж, фобию и скрытые факты.</p></div>
+        <div class="rule-step"><span class="rule-step__num">2</span><b>Раскрытие</b><p>По раундам вы открываете карты и объясняете, чем полезны именно в этой катастрофе.</p></div>
+        <div class="rule-step"><span class="rule-step__num">3</span><b>Голосование</b><p>В конце раунда лагерь изгоняет одного. Набрали 70% голосов — уходите сразу.</p></div>
+        <div class="rule-step"><span class="rule-step__num">4</span><b>Бункер</b><p>Игра идёт, пока не останутся только те, кому хватило мест. Они и победили.</p></div>
+      </div>
+      <button class="btn btn--ghost" id="btn-help-home">💡 Подробные правила и советы</button>
+    </div>
+  </section>
+
+  <!-- ══════════════ ЭКРАН 2: ЛОББИ ══════════════ -->
+  <section class="screen screen--lobby" id="screen-lobby" hidden>
+    <header class="topbar">
+      <div class="topbar__title">Лобби</div>
+      <div class="topbar__meta" id="lobby-round">Ожидание игроков</div>
+    </header>
+
+    <div class="lobby">
+      <div class="lobby__code" data-local-hide>
+        <span class="code-label">Код приглашения</span>
+        <div class="code-badge" id="lobby-code">-----</div>
+        <div class="copy-row">
+          <button class="btn btn--sm" id="btn-copy-code">Скопировать код</button>
+          <button class="btn btn--sm btn--ghost" id="btn-copy-link">Скопировать ссылку</button>
+          <button class="btn btn--sm btn--ghost" id="btn-share" hidden>Поделиться</button>
+        </div>
+        <p class="hint">Друзья открывают ссылку или вводят код на главной странице. Регистрация не нужна.</p>
+      </div>
+
+      <div class="lobby__players">
+        <h2 class="section-title">Выжившие <span class="muted" id="lobby-count">0/16</span></h2>
+        <div class="lobby__bots">
+          <button class="btn btn--sm btn--ghost" id="btn-add-bot">+ Добавить бота</button>
+          <span class="hint">Проверить партию в одиночку: боты раскрывают карты и голосуют сами.</span>
+        </div>
+        <div class="players-grid" id="lobby-players"></div>
+        <div class="empty-state" id="lobby-empty">Пока никого. Отправьте друзьям код или добавьте ботов, чтобы попробовать одному.</div>
+      </div>
+
+      <div class="settings" id="settings-panel">
+        <h2 class="section-title">Настройки партии <span class="muted">(только ведущий)</span></h2>
+
+        <div class="settings__row">
+          <div class="settings__label">
+            Мест в бункере
+            <span class="tip">
+              <button class="tip__icon" type="button" aria-label="Подсказка">i</button>
+              <span class="tooltip">
+                <span class="tooltip__title">Сколько человек выживет</span>
+                <span class="tooltip__body">По официальным правилам в бункер попадает половина игроков с округлением вниз: 6 игроков → 3 места, 8 → 4, 12 → 6. Можно поставить фиксированное число — например, 2 места для жёсткой партии.</span>
+              </span>
+            </span>
+          </div>
+          <div class="segmented" id="seats-mode">
+            <button class="segmented__item is-active" data-mode="auto" type="button">Авто (половина)</button>
+            <button class="segmented__item" data-mode="fixed" type="button">Фиксировано</button>
+          </div>
+        </div>
+
+        <div class="settings__row" id="seats-fixed-row" hidden>
+          <div class="settings__label">Фиксированное число мест</div>
+          <div class="segmented" id="seats-fixed">
+            <button class="segmented__item" data-seats="2" type="button">2</button>
+            <button class="segmented__item" data-seats="3" type="button">3</button>
+            <button class="segmented__item" data-seats="4" type="button">4</button>
+            <button class="segmented__item" data-seats="5" type="button">5</button>
+          </div>
+        </div>
+
+        <div class="settings__row">
+          <div class="settings__label">
+            Длительность речей
+            <span class="tip">
+              <button class="tip__icon" type="button" aria-label="Подсказка">i</button>
+              <span class="tooltip">
+                <span class="tooltip__title">Таймеры партии</span>
+                <span class="tooltip__body">Сколько секунд даётся на представление, общее обсуждение, обвинения и голосование. Для новичков лучше оставить щедрые значения.</span>
+              </span>
+            </span>
+          </div>
+          <div class="segmented" id="tempo">
+            <button class="segmented__item" data-tempo="chill" type="button">Спокойно</button>
+            <button class="segmented__item is-active" data-tempo="normal" type="button">Обычно</button>
+            <button class="segmented__item" data-tempo="fast" type="button">Быстро</button>
+          </div>
+        </div>
+
+        <div class="settings__row">
+          <div class="settings__label">
+            Автотаймер
+            <span class="tip">
+              <button class="tip__icon" type="button" aria-label="Подсказка">i</button>
+              <span class="tooltip">
+                <span class="tooltip__title">Автоматические переходы</span>
+                <span class="tooltip__body">Фазы переключаются сами по таймеру. Если выключить — ведущий жмёт «Дальше» вручную, удобно для живой компании.</span>
+              </span>
+            </span>
+          </div>
+          <label class="switch"><input type="checkbox" id="set-auto" checked></label>
+        </div>
+
+        <div class="settings__row">
+          <div class="settings__label">
+            Изгнанные сохраняют голос
+            <span class="tip">
+              <button class="tip__icon" type="button" aria-label="Подсказка">i</button>
+              <span class="tooltip">
+                <span class="tooltip__title">Правило настольной версии</span>
+                <span class="tooltip__body">В настольной игре изгнанные не покидают обсуждение: они голосуют и влияют на состав. Включите, если хотите больше интриги и мести.</span>
+              </span>
+            </span>
+          </div>
+          <label class="switch"><input type="checkbox" id="set-exiles"></label>
+        </div>
+
+        <div class="settings__row">
+          <div class="settings__label">
+            Спец. возможности
+            <span class="tip">
+              <button class="tip__icon" type="button" aria-label="Подсказка">i</button>
+              <span class="tooltip">
+                <span class="tooltip__title">Разовые действия</span>
+                <span class="tooltip__body">Карты вроде «вскрыть чужую характеристику» или «отменить голосование». Новичкам можно выключить на первую партию.</span>
+              </span>
+            </span>
+          </div>
+          <label class="switch"><input type="checkbox" id="set-specials" checked></label>
+        </div>
+
+        <div class="seats-preview" id="seats-preview"></div>
+      </div>
+
+      <div class="lobby__actions">
+        <button class="btn btn--primary btn--block" id="btn-start">Начать партию</button>
+        <button class="btn btn--ghost" id="btn-help-lobby">💡 Правила</button>
+        <button class="btn btn--ghost btn--danger" id="btn-leave-lobby">Выйти из комнаты</button>
+        <p class="hint" id="start-hint">Начать может только ведущий.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════ ЭКРАН 3: ИГРА ══════════════ -->
+  <section class="screen screen--game" id="screen-game" hidden>
+    <header class="hud">
+      <div class="hud__left">
+        <span class="phase-badge" id="hud-phase">Раунд</span>
+        <span class="hud__round" id="hud-round">Раунд 1</span>
+      </div>
+      <div class="hud__right">
+        <span class="muted" id="hud-seats"></span>
+        <button class="btn btn--sm btn--ghost" id="btn-help-game" title="Правила и подсказки">💡</button>
+      </div>
+      <div class="timer" id="hud-timer">
+        <div class="timer__bar" id="hud-timer-bar"></div>
+      </div>
+    </header>
+
+    <div class="action-panel" id="action-panel">
+      <div class="action-panel__what" id="action-what">Загрузка…</div>
+      <div class="action-panel__hint" id="action-hint"></div>
+      <div class="action-panel__buttons" id="action-buttons"></div>
+    </div>
+
+    <div class="board">
+      <div class="board__col">
+        <section class="catastrophe" id="catastrophe-box"></section>
+        <section class="bunker-box" id="bunker-box"></section>
+      </div>
+
+      <div class="board__col">
+        <h2 class="section-title">Временный лагерь <span class="muted" id="seats-counter"></span></h2>
+        <div class="seat-list" id="seat-list"></div>
+      </div>
+
+      <div class="board__col">
+        <h2 class="section-title">Мой персонаж <span class="muted" id="my-reveal-count"></span></h2>
+        <p class="hint">Ваши характеристики — в нижней панели. Она всегда под рукой и видна только вам.</p>
+        <div class="field">
+          <label class="field__label" for="my-notes">Мои заметки <span class="muted">(видите только вы)</span></label>
+          <textarea class="input" id="my-notes" rows="4" placeholder="Кто что соврал, кого выгоняем…"></textarea>
+          <span class="hint" id="notes-status"></span>
+        </div>
+        <button class="btn btn--ghost btn--block" id="btn-open-sheet">Показать мои карты</button>
+      </div>
+    </div>
+
+    <div class="log" id="game-log"></div>
+
+  </section>
+
+  <!-- ══════════════ ЭКРАН 4: ФИНАЛ ══════════════ -->
+  <section class="screen screen--finale" id="screen-finale" hidden>
+    <div class="finale" id="finale-box"></div>
+    <div class="lobby__actions">
+      <button class="btn btn--primary" id="btn-help-finale">💡 Что дальше</button>
+    </div>
+  </section>
+
+  <!-- ══════════════ МОДАЛЬНОЕ ОКНО ГОЛОСОВАНИЯ ══════════════ -->
+  <div class="modal" id="modal-vote" hidden>
+    <div class="modal__backdrop" data-close-vote></div>
+    <div class="modal__panel">
+      <div class="modal__head">
+        <h2 id="vote-title">Кто покинет лагерь?</h2>
+        <p class="hint" id="vote-subtitle"></p>
+      </div>
+      <div class="modal__body">
+        <div class="vote-grid" id="vote-grid"></div>
+        <div class="tally" id="vote-tally" hidden></div>
+      </div>
+      <div class="modal__foot">
+        <button class="btn btn--ghost" id="btn-vote-skip">Воздержаться</button>
+        <button class="btn btn--primary" id="btn-vote-confirm" disabled>Подтвердить голос</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ МОДАЛЬНОЕ ОКНО ПОДТВЕРЖДЕНИЯ ══════════════ -->
+  <div class="modal" id="modal-confirm" hidden>
+    <div class="modal__backdrop" data-close-confirm></div>
+    <div class="modal__panel">
+      <div class="modal__head"><h2 id="confirm-title">Подтвердите</h2></div>
+      <div class="modal__body"><p id="confirm-text"></p></div>
+      <div class="modal__foot">
+        <button class="btn btn--ghost" id="btn-confirm-no">Отмена</button>
+        <button class="btn btn--danger" id="btn-confirm-yes">Да</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ СПРАВОЧНАЯ ШТОРКА ══════════════ -->
+  <aside class="help-drawer" id="help-drawer" aria-hidden="true">
+    <div class="help-drawer__head">
+      <h2>Правила и подсказки</h2>
+      <button class="btn btn--sm btn--ghost" id="btn-help-close">Закрыть</button>
+    </div>
+    <div class="help-drawer__body" id="help-body"></div>
+  </aside>
+
+  <!-- Шторка персонажа: живёт в оболочке приложения, а не внутри экрана.
+       Внутри экрана её ломала бы анимация появления: transform у предка
+       превращает position: fixed в привязку к этому предку. -->
+  <section class="sheet" id="my-sheet" aria-label="Мои характеристики" hidden>
+    <div class="sheet__head">
+      <span id="sheet-title">Мой персонаж</span>
+      <button class="btn btn--sm btn--ghost" id="btn-toggle-sheet" aria-expanded="true">Свернуть</button>
+    </div>
+    <div class="sheet__body" id="my-sheet-body"></div>
+  </section>
+
+  <div class="toasts" id="toasts"></div>
+</div>
+
+<script src="decks.data.js"></script>
+<script src="engine.js"></script>
+<script src="js/sounds.js"></script>
+<script src="js/local-client.js"></script>
+<script src="js/render.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
