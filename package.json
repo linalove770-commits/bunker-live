@@ -1,0 +1,28 @@
+{
+  "name": "bunker-live",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Bunker Live — веб-игра на выживание: комнаты по коду приглашения, карточки персонажей, раунды, голосования.",
+  "main": "server/server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server/server.js",
+    "dev": "node server/server.js",
+    "test": "node --test tests/rules.test.js tests/game.test.js tests/decks.test.js tests/invariants.test.js",
+    "test:ui:static": "node tests/e2e/check-ui-integration.js",
+    "test:e2e": "node tests/e2e/play-full-game.js 6 && node tests/e2e/check-privacy.js 6",
+    "test:ui": "node tests/e2e/check-ui-browser.js",
+    "verify": "npm test && npm run test:ui:static && npm run test:e2e && npm run test:ui"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "socket.io": "^4.8.1"
+  },
+  "devDependencies": {
+    "socket.io-client": "^4.8.1"
+  },
+  "license": "ISC"
+}
