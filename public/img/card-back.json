@@ -1,0 +1,24 @@
+{
+  "api": "http://127.0.0.1:8317/v1/images/edits",
+  "output": "public\\img\\card-back.png",
+  "refs": [
+    "_style-seed.png"
+  ],
+  "prompt": "A closed heavy steel bunker door seen straight on, rivets and a big three-blade radiation trefoil painted in amber in the centre, scratched metal, faint condensation. This is the back of a playing card: the composition must be symmetrical and readable as a repeating pattern.\n\nSTYLE: Dark post-apocalyptic illustration for a survival board game card. Muted palette: deep charcoal background #0a0d14, hazard amber #f5a623 accents, cold cyan #22d3ee secondary accents, dusty red #ff5c5c for danger only. Rough engraved linework mixed with soft airbrush shading, retro Soviet civil-defence poster feel, film grain, subtle vignette. Centered single subject, generous empty margin around it, no text, no letters, no numbers, no logos, no watermark, no signature, no frame border. IMPORTANT: the artwork must stay readable when scaled down to 64 pixels — bold simple shapes, strong silhouette, high contrast against the dark background, few large forms instead of many small details, no busy texture.",
+  "requested_size": "1024x1024",
+  "quality": "high",
+  "usage": {
+    "input_tokens": 1255,
+    "input_tokens_details": {
+      "image_tokens": 1024,
+      "text_tokens": 231
+    },
+    "output_tokens": 515,
+    "output_tokens_details": {
+      "image_tokens": 515,
+      "text_tokens": 0
+    },
+    "total_tokens": 1770
+  },
+  "actual_size": "1254x1254"
+}

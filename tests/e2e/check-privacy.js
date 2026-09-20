@@ -92,7 +92,8 @@ async function main() {
     socket.on('state', (st) => {
       received[index].push(st);
       if (st.me && st.me.cards && st.me.cards.length) {
-        ownCards[st.me.id] = st.me.cards.map((c) => c.title);
+        // Полный набор карт игрока знает только он сам — берём его отсюда.
+        ownCards[st.me.id] = st.me.cards.map((c) => ({ id: c.id, title: c.title, category: c.category }));
       }
       for (const p of st.players || []) {
         const set = revealedTitles[p.id] || new Set();
@@ -146,6 +147,18 @@ async function main() {
   assert.equal(errors.length, 0, errors.join('\n'));
 
   // ── Собственно проверка утечек ──
+  // Сравниваем ТОЧНЫЕ значения, а не вхождения подстрок: заголовок скрытой
+  // карты вроде «Голод» вполне законно встречается в тексте катастрофы,
+  // и поиск подстрокой даёт ложные срабатывания.
+  const stringValues = (node, out) => {
+    if (typeof node === 'string') { out.add(node); return out; }
+    if (Array.isArray(node)) { for (const item of node) stringValues(item, out); return out; }
+    if (node && typeof node === 'object') {
+      for (const value of Object.values(node)) stringValues(value, out);
+    }
+    return out;
+  };
+
   let snapshotsChecked = 0;
   let leaks = 0;
   const leakSamples = [];
@@ -156,11 +169,12 @@ async function main() {
 
     for (const snap of received[i]) {
       snapshotsChecked += 1;
-      const json = JSON.stringify(snap);
+      const values = stringValues(snap, new Set());
+
       // Что уже раскрыто у каждого игрока на момент этого снапшота.
       const revealedNow = {};
       for (const p of snap.players || []) {
-        revealedNow[p.id] = new Set((p.revealedCards || []).map((c) => c.title));
+        revealedNow[p.id] = new Set((p.revealedCards || []).map((c) => c.category));
       }
       // Легальное исключение: игрок мог тайно подсмотреть чужие карты.
       const peekedTitles = new Set();
@@ -168,16 +182,16 @@ async function main() {
         for (const c of snap.peeked[targetId] || []) peekedTitles.add(c.title);
       }
 
-      for (const [otherId, titles] of Object.entries(ownCards)) {
+      for (const [otherId, cards] of Object.entries(ownCards)) {
         if (otherId === meId) continue; // свои карты видеть можно
         const shown = revealedNow[otherId] || new Set();
-        for (const title of titles) {
-          if (shown.has(title)) continue; // уже раскрыта — законно
-          if (peekedTitles.has(title)) continue; // законно подсмотрена
-          if (json.includes(JSON.stringify(title).slice(1, -1))) {
+        for (const card of cards) {
+          if (shown.has(card.category)) continue;   // раскрыта — законно
+          if (peekedTitles.has(card.title)) continue; // законно подсмотрена
+          if (values.has(card.title) || values.has(card.id)) {
             leaks += 1;
             if (leakSamples.length < 5) {
-              leakSamples.push(`снапшот для ${names[i]}: утёк закрытый «${title}» игрока ${otherId} (фаза ${snap.phase})`);
+              leakSamples.push(`снапшот для ${names[i]}: утёк закрытый «${card.title}» (${card.category}) игрока ${otherId}, фаза ${snap.phase}`);
             }
           }
         }

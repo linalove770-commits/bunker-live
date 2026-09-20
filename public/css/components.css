@@ -1065,3 +1065,119 @@
 
 .vote-card.is-picked .vote-card__avatar { border-color: var(--danger-line); color: #ffb3b3; }
 .vote-card.is-picked .vote-card__meta { color: #ffb3b3; }
+
+/* ==========================================================================
+   ИЛЛЮСТРАЦИИ
+   Арт подключён как фоновые изображения: если файла нет, интерфейс просто
+   остаётся без картинки, а не показывает битую иконку.
+   ========================================================================== */
+
+/* --- Иконка категории на карточке --- */
+.card__icon {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  font-size: 0.875rem;
+  line-height: 1;
+}
+
+.card__icon[class*="card__icon--"] {
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  border-radius: 4px;
+}
+
+.card__icon--profession { background-image: url("../img/cat-profession.png"); }
+.card__icon--biology    { background-image: url("../img/cat-biology.png"); }
+.card__icon--body       { background-image: url("../img/cat-body.png"); }
+.card__icon--trait      { background-image: url("../img/cat-trait.png"); }
+.card__icon--health     { background-image: url("../img/cat-health.png"); }
+.card__icon--hobby      { background-image: url("../img/cat-hobby.png"); }
+.card__icon--phobia     { background-image: url("../img/cat-phobia.png"); }
+.card__icon--luggage    { background-image: url("../img/cat-luggage.png"); }
+.card__icon--backpack   { background-image: url("../img/cat-backpack.png"); }
+.card__icon--fact       { background-image: url("../img/cat-fact.png"); }
+.card__icon--special    { background-image: url("../img/cat-special.png"); }
+
+/* --- Рубашка закрытой карты --- */
+.card--hidden {
+  background-image: url("../img/card-back.jpg");
+  background-size: cover;
+  background-position: center;
+  background-blend-mode: luminosity;
+}
+
+/* Поверх рубашки — затемнение, чтобы текст оставался читаемым. */
+.card--hidden::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(180deg,
+    rgba(10, 13, 20, 0.72),
+    rgba(10, 13, 20, 0.88));
+  pointer-events: none;
+}
+
+.card--hidden > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* --- Катастрофа: иллюстрация вместо эмодзи --- */
+.catastrophe__icon {
+  background-image: url("../img/catastrophe.jpg");
+  background-size: cover;
+  background-position: center;
+  font-size: 0;
+}
+
+/* --- Бункер: иллюстрация в шапке раздела --- */
+.bunker-box .section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bunker-box .section-title::before {
+  content: "";
+  flex: none;
+  width: 22px;
+  height: 22px;
+  background: url("../img/bunker.jpg") center/contain no-repeat;
+}
+
+/* --- Обложка: атмосферный фон --- */
+/* Затемняем по горизонтали: слева под текстом плотно, справа иллюстрация
+   остаётся видимой, чтобы читался фокус картинки. */
+.home-hero {
+  background-image:
+    linear-gradient(100deg,
+      rgba(10, 13, 20, 0.94) 0%,
+      rgba(10, 13, 20, 0.78) 44%,
+      rgba(10, 13, 20, 0.34) 100%),
+    url("../img/hero.jpg");
+  background-size: cover;
+  background-position: center 28%;
+}
+
+/* На телефоне картинка узкая — возвращаем вертикальное затемнение. */
+@media (max-width: 640px) {
+  .home-hero {
+    background-image:
+      linear-gradient(180deg, rgba(10, 13, 20, 0.72) 0%, rgba(10, 13, 20, 0.95) 70%),
+      url("../img/hero.jpg");
+    background-position: center top;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card--hidden,
+  .home-hero {
+    transition: none;
+  }
+}

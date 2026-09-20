@@ -1,0 +1,24 @@
+{
+  "api": "http://127.0.0.1:8317/v1/images/edits",
+  "output": "public\\img\\cat-trait.png",
+  "refs": [
+    "card-back.png"
+  ],
+  "prompt": "A theatrical mask split down the middle: one half calm and composed, the other half tense and shouting. Dark patina, amber highlights.\n\nSTYLE: Dark post-apocalyptic illustration for a survival board game card. Muted palette: deep charcoal background #0a0d14, hazard amber #f5a623 accents, cold cyan #22d3ee secondary accents, dusty red #ff5c5c for danger only. Rough engraved linework mixed with soft airbrush shading, retro Soviet civil-defence poster feel, film grain, subtle vignette. Centered single subject, generous empty margin around it, no text, no letters, no numbers, no logos, no watermark, no signature, no frame border. IMPORTANT: the artwork must stay readable when scaled down to 64 pixels — bold simple shapes, strong silhouette, high contrast against the dark background, few large forms instead of many small details, no busy texture.",
+  "requested_size": "1024x1024",
+  "quality": "high",
+  "usage": {
+    "input_tokens": 1725,
+    "input_tokens_details": {
+      "image_tokens": 1521,
+      "text_tokens": 204
+    },
+    "output_tokens": 915,
+    "output_tokens_details": {
+      "image_tokens": 915,
+      "text_tokens": 0
+    },
+    "total_tokens": 2640
+  },
+  "actual_size": "1254x1254"
+}

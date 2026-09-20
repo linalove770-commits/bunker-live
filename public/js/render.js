@@ -100,8 +100,12 @@
       : '';
     const title = revealed ? esc(card.title) : 'Закрыто';
     const text = revealed ? esc(card.text) : 'Характеристика ещё не раскрыта';
+    // У раскрытой карты — иллюстрация категории; у закрытой остаётся эмодзи.
+    const icon = revealed
+      ? `<span class="card__icon card__icon--${esc(card.category)}" aria-hidden="true"></span>`
+      : `<span class="card__icon" aria-hidden="true">${esc(info.icon)}</span>`;
     return `<article class="${classes.join(' ')}" ${compact ? '' : 'data-category="' + esc(card.category) + '"'}>
-      <div class="card__cat">${esc(info.icon)} ${esc(info.label)}</div>
+      <div class="card__cat">${icon} ${esc(info.label)}</div>
       <h4 class="card__title">${title}</h4>
       <p class="card__text">${text}</p>
       ${revealed ? tags : ''}
