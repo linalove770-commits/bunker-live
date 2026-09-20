@@ -12,6 +12,7 @@
     "test:ui:static": "node tests/e2e/check-ui-integration.js",
     "test:e2e": "node tests/e2e/play-full-game.js 6 && node tests/e2e/check-privacy.js 6",
     "test:ui": "node tests/e2e/check-ui-browser.js && node tests/e2e/check-solo.js",
+    "test:live": "node tests/e2e/check-bots-live.js 3000",
     "verify": "npm test && npm run test:ui:static && npm run test:e2e && npm run test:ui"
   },
   "engines": {

@@ -26,7 +26,13 @@
       if (!socket) return resolve({ ok: false, error: 'Нет соединения с сервером' });
       let settled = false;
       const timer = setTimeout(() => {
-        if (!settled) { settled = true; resolve({ ok: false, error: 'Сервер не ответил, попробуйте ещё раз' }); }
+        if (!settled) {
+          settled = true;
+          resolve({
+            ok: false,
+            error: 'Сервер не ответил. Обновите страницу — возможно, она открыта от старой версии.',
+          });
+        }
       }, 8000);
       socket.emit(event, payload || {}, (res) => {
         if (settled) return;

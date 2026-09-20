@@ -76,10 +76,29 @@ class GameState {
     this.lastOutcome = null;
     this.catastrophe = null;
     this.bunker = null;
-    this.seatCount = null;
+    this.seatCount = this.seatInfo().seats;
     this.pendingExile = [];
     this.finaleReport = null;
     this.startedAt = null;
+  }
+
+  /** Добавляет участника до старта партии. Нужно ботам и локальному режиму. */
+  addPlayer({ id, nickname, isHost = false, isBot = false }) {
+    if (this.phase !== PHASES.LOBBY) throw new GameError('Состав набирается только до начала партии');
+    const player = this._blankPlayer({ id, nickname, isHost, isBot, connected: true });
+    this.players.push(player);
+    this.seatCount = this.seatInfo().seats;
+    return player;
+  }
+
+  /** Убирает бота из лобби. */
+  removeBotById(id) {
+    if (this.phase !== PHASES.LOBBY) throw new GameError('Состав меняется только до начала партии');
+    const idx = this.players.findIndex((p) => p.id === id && p.isBot);
+    if (idx === -1) throw new GameError('Такого бота нет в комнате');
+    const [removed] = this.players.splice(idx, 1);
+    this.seatCount = this.seatInfo().seats;
+    return removed;
   }
 
   _blankPlayer(p) {

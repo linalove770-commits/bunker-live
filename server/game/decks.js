@@ -1,15 +1,34 @@
 'use strict';
 
-const fs = require('fs');
-const path = require('path');
 const { CHARACTER_CATEGORIES, DECK_FILES } = require('./constants');
-
-const DATA_DIR = path.join(__dirname, 'data');
 
 const cache = new Map();
 
+/**
+ * fs и path нужны только в Node. В статической сборке (GitHub Pages) движок
+ * работает прямо в браузере, где файловой системы нет, а данные приходят
+ * одним объектом `__BUNKER_DECKS__`. Поэтому require ленивый: при загрузке
+ * модуля в браузере до него дело не доходит.
+ */
+let nodeFs = null;
+function fileSystem() {
+  if (!nodeFs) {
+    // eslint-disable-next-line global-require
+    nodeFs = { fs: require('fs'), path: require('path') };
+  }
+  return nodeFs;
+}
+
 function readJson(fileName) {
-  const full = path.join(DATA_DIR, `${fileName}.json`);
+  const bundled = globalThis.__BUNKER_DECKS__;
+  if (bundled) {
+    if (!bundled[fileName]) {
+      throw new Error(`Колода ${fileName} не попала в статическую сборку`);
+    }
+    return bundled[fileName];
+  }
+  const { fs, path } = fileSystem();
+  const full = path.join(__dirname, 'data', `${fileName}.json`);
   const raw = fs.readFileSync(full, 'utf8').replace(/^\uFEFF/, '');
   return JSON.parse(raw);
 }
@@ -111,7 +130,6 @@ function validateDecks() {
 }
 
 module.exports = {
-  DATA_DIR,
   CHARACTER_CATEGORIES,
   DECK_FILES,
   loadDeck,
