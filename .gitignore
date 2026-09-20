@@ -6,3 +6,4 @@ npm-debug.log*
 .env.*
 .calib.js
 .build/
+dist/

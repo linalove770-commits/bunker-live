@@ -3,7 +3,7 @@
 const { RoomManager, RoomError, MAX_PLAYERS } = require('./game/RoomManager');
 const { GameError } = require('./game/GameState');
 const { loadHelp, categoryMeta } = require('./game/decks');
-const { SEATS_MODE, bunkerSeats, defaultSettings } = require('./game/rules');
+const { SEATS_MODE, bunkerSeats, defaultSettings, applySettingsPatch } = require('./game/rules');
 
 const roomManager = new RoomManager();
 
@@ -160,22 +160,10 @@ function registerSocketHandlers(io) {
       if (!member || !member.isHost) throw new RoomError('Настройки меняет только ведущий');
       if (room.game && room.game.phase !== 'lobby') throw new RoomError('Настройки фиксируются до начала партии');
 
-      const s = room.settings;
-      if (patch.seatsMode && Object.values(SEATS_MODE).includes(patch.seatsMode)) s.seatsMode = patch.seatsMode;
-      if (patch.seatsFixed != null) s.seatsFixed = Math.max(1, Math.min(MAX_PLAYERS - 1, Math.floor(Number(patch.seatsFixed) || 1)));
-      if (patch.maxRounds != null) s.maxRounds = Math.max(1, Math.min(12, Math.floor(Number(patch.maxRounds) || 7)));
-      if (patch.autoAdvance != null) s.autoAdvance = !!patch.autoAdvance;
-      if (patch.exilesKeepVoting != null) s.exilesKeepVoting = !!patch.exilesKeepVoting;
-      if (patch.enableSpecials != null) s.enableSpecials = !!patch.enableSpecials;
-      if (patch.timers && typeof patch.timers === 'object') {
-        for (const key of Object.keys(s.timers)) {
-          const v = Number(patch.timers[key]);
-          if (Number.isFinite(v)) s.timers[key] = Math.max(5, Math.min(300, Math.round(v)));
-        }
-      }
-      if (room.game) room.game.settings = s;
+      applySettingsPatch(room.settings, patch, { maxPlayers: MAX_PLAYERS });
+      if (room.game) room.game.settings = room.settings;
       emitState(room);
-      return { settings: s };
+      return { settings: room.settings };
     }));
 
     socket.on('room:addBot', guard(socket, () => {

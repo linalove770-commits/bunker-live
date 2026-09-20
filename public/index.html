@@ -42,8 +42,7 @@
         <button class="btn btn--primary btn--block" id="btn-create">Создать комнату</button>
         <p class="error-text" id="create-error" hidden></p>
       </div>
-
-      <div class="panel">
+      <div class="panel" id="panel-join" data-local-hide>
         <h2 class="panel__title">Войти по коду</h2>
         <p class="panel__text">Ведущий прислал код из 5 символов? Введите его и своё имя.</p>
         <div class="field">
@@ -60,6 +59,12 @@
         <p class="hint" id="room-preview" hidden></p>
       </div>
     </div>
+
+    <p class="local-note" id="local-note" hidden>
+      Это демо-сборка без сервера: партия идёт на одном устройстве, соперники — боты.
+      Чтобы играть с друзьями по коду приглашения, поднимите серверную версию —
+      как это сделать, написано в README проекта.
+    </p>
 
     <div class="home-rules">
       <h2 class="section-title">Как играют в «Бункер»</h2>
@@ -81,7 +86,7 @@
     </header>
 
     <div class="lobby">
-      <div class="lobby__code">
+      <div class="lobby__code" data-local-hide>
         <span class="code-label">Код приглашения</span>
         <div class="code-badge" id="lobby-code">-----</div>
         <div class="copy-row">

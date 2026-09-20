@@ -164,6 +164,34 @@ function defaultSettings() {
   };
 }
 
+/** Зажимает число в границы, переживая мусор на входе. */
+function clampInt(value, min, max, fallback) {
+  const n = Math.floor(Number(value));
+  if (!Number.isFinite(n)) return fallback;
+  return Math.min(max, Math.max(min, n));
+}
+
+/**
+ * Приводит патч настроек к допустимым значениям.
+ * Общий для сервера и локального режима в браузере — правила одни и те же.
+ */
+function applySettingsPatch(settings, patch, { maxPlayers = 16 } = {}) {
+  const s = settings;
+  if (patch.seatsMode && Object.values(SEATS_MODE).includes(patch.seatsMode)) s.seatsMode = patch.seatsMode;
+  if (patch.seatsFixed != null) s.seatsFixed = clampInt(patch.seatsFixed, 1, maxPlayers - 1, s.seatsFixed);
+  if (patch.maxRounds != null) s.maxRounds = clampInt(patch.maxRounds, 1, 12, s.maxRounds);
+  if (patch.autoAdvance != null) s.autoAdvance = !!patch.autoAdvance;
+  if (patch.exilesKeepVoting != null) s.exilesKeepVoting = !!patch.exilesKeepVoting;
+  if (patch.enableSpecials != null) s.enableSpecials = !!patch.enableSpecials;
+  if (patch.timers && typeof patch.timers === 'object') {
+    for (const key of Object.keys(s.timers)) {
+      const v = Number(patch.timers[key]);
+      if (Number.isFinite(v)) s.timers[key] = clampInt(v, 5, 300, s.timers[key]);
+    }
+  }
+  return s;
+}
+
 module.exports = {
   CATEGORY_TOTAL,
   SEATS_MODE,
@@ -178,4 +206,6 @@ module.exports = {
   resolvePrimaryVote,
   resolveRevote,
   defaultSettings,
+  applySettingsPatch,
+  clampInt,
 };

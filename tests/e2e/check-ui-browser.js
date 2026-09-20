@@ -19,8 +19,9 @@ const { spawn } = require('child_process');
 const path = require('path');
 const assert = require('node:assert/strict');
 
-const PW_PATH = process.env.PLAYWRIGHT_PATH || 'D:/HermesPipeline/Hermes/node_modules/playwright';
-const { chromium } = require(PW_PATH);
+const { loadPlaywright } = require('../helpers/playwright');
+
+const { chromium } = loadPlaywright();
 
 const PORT = Number(process.env.UI_PORT || 3114);
 const ROOT = path.join(__dirname, '..', '..');

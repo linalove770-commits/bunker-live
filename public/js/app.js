@@ -532,6 +532,21 @@
     window.BunkerSounds.setMuted(S.getMuted());
     S.connect();
 
+    // Локальная сборка: ни комнат, ни ссылок — играем с ботами на одном устройстве.
+    if (S.isLocal) {
+      document.querySelectorAll('[data-local-hide]').forEach((n) => n.setAttribute('hidden', ''));
+      const note = el('local-note');
+      if (note) note.hidden = false;
+      const lead = document.querySelector('.home-hero__lead');
+      if (lead) {
+        lead.innerHTML = 'Катастрофа уже случилась. У входа в убежище — выжившие, но мест хватит не всем: '
+          + 'по правилам игры в бункер попадает <strong>половина</strong>. '
+          + 'Здесь вы играете против ботов — они спорят и голосуют по-настоящему.';
+      }
+      const facts = document.querySelector('.home-hero__facts');
+      if (facts) facts.innerHTML = '<li><span>1</span> игрок</li><li><span>+боты</span> соперники</li><li><span>0 ₽</span> без регистрации</li>';
+    }
+
     S.on('meta', (m) => {
       help = m.help;
       R.setCategories(m.categories);

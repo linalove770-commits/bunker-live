@@ -1,0 +1,60 @@
+name: Deploy demo to GitHub Pages
+
+# Pages умеет отдавать только файлы, поэтому здесь собирается статическая
+# версия: тот же движок и интерфейс работают в браузере, соперники — боты.
+# Полноценная игра с друзьями по коду приглашения требует Node-сервера
+# (см. render.yaml / Dockerfile в README).
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - run: npm ci
+
+      - name: Проверка движка и данных
+        run: npm test
+
+      - name: Сборка статической версии
+        run: node tools/build-pages.js
+
+      - name: Проверка сборки в браузере
+        run: npx playwright install --with-deps chromium && node tests/e2e/check-pages-build.js
+        env:
+          PLAYWRIGHT_PATH: playwright
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

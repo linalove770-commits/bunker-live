@@ -1693,3 +1693,22 @@
   border-color: var(--danger-line);
   color: var(--danger);
 }
+
+/* ==========================================================================
+   ПРИМЕЧАНИЕ СТАТИЧЕСКОЙ СБОРКИ
+   Поясняет, что версия на GitHub Pages играется с ботами на одном устройстве.
+   ========================================================================== */
+
+.local-note {
+  margin: 0 0 6px;
+  padding: 12px 14px;
+  border: 1px dashed var(--accent-2-line);
+  border-left-width: 4px;
+  border-radius: var(--radius-m);
+  background: var(--accent-2-soft);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--text-dim);
+}
+
+.local-note strong { color: var(--accent-2); }
